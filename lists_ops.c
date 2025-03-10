@@ -4,19 +4,55 @@
 
 /*contains the linked lists abstract machine and related implemented functions*/
 
-/*type definition : structure of a linked lists cell*/
 
-typedef struct cell cell;     /*type of an element in the list*/
+
+/*------------------TYPE DEFINITIONS------------------------------ */
+
+
+/*structure of a linked lists cell will be used  as a queue*/
+/*type of an element in the list*/
+typedef struct cell cell;     
+
 
 struct cell {     
-    int value;
+    consultation conslt;
     cell *addr;
 };
 
 
 
+/*Consultation type definitin - elements inside the queue -*/
 
-/*the linked lists model implementation*/
+/* define a type of consultation reasons */
+
+typedef enum {
+    work_accident,
+    occupational_disease,
+    return_to_work,
+    pre_employment,
+    periodic_examination
+}  reason;
+
+
+typedef struct consultation consultation ;
+ struct consultation
+ {
+    char Employee_ID[8];
+    char *Employee_Name;            /*will be allocated dynamically to handle names with diffrent length */
+    char Consultation_Time[5];         /*in the format HH:MM*/
+    reason Consultation_Reason ;     /*takes one of the reasons in the reason enum type*/
+ };
+ 
+
+
+
+
+
+
+
+
+ 
+/*-------------------------the linked lists model implementation----------------------------*/
 void Allocate(cell **p){
     *p = malloc(sizeof(cell));
 }
