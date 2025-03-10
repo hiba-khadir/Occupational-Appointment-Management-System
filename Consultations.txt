@@ -1,0 +1,6 @@
+Employee ID | Employee Name | Consultation Time | Consultation Reason  
+
+
+/*this is the format to be followed when you fill the file with emplloyees info  :) */
+/*names and fileds that may has spaces in them ndirouhoum between "" */
+/*this is just to make reading from the files easier */
