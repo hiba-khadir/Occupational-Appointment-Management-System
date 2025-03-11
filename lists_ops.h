@@ -8,7 +8,7 @@
 typedef struct cell cell;     /*type of an element in the list*/
 
 struct cell {     
-    int value;
+    int value; 
     cell *addr;
 };
 
