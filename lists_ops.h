@@ -2,15 +2,18 @@
 #define lists_ops
 
 
-
 /*type definition : structure of a linked lists cell*/
 
 typedef struct cell cell;     /*type of an element in the list*/
 
 struct cell {     
-    int value; 
+    char id[8];
+    int consult_num;
+    int last_consult[8];
+    int return_work[8];
     cell *addr;
 };
+/* lists tae history and full name mzl */
 
 
 /*linked list abstract machine definitions  { Allocate , Free , Ass_val , Ass_adr , Value , Next }*/
