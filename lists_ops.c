@@ -8,12 +8,12 @@
 
 /*------------------TYPE DEFINITIONS------------------------------ */
 
-/*structure of a linked lists cell*/
-typedef struct cell cell;     
+/*structure of a linked lists elmnt*/
+typedef struct elmnt elmnt;     
 
-struct cell {              /*here and in the model replace the "int value " with the tpe employee (maram)*/
-    int value;
-    cell *addr;
+struct elmnt {              /*here and in the model replace the "int value " with the tpe employee (maram)*/
+    int value;              /*btw this is named elmnt because i already named cell name it what you want*/
+    elmnt *addr;
 };
 
 
@@ -21,23 +21,23 @@ struct cell {              /*here and in the model replace the "int value " with
 
 
 /*-------------------------the linked lists model implementation----------------------------*/
-void Allocate(cell **p){
-    *p = malloc(sizeof(cell));
+void Allocate(elmnt **p){
+    *p = malloc(sizeof(elmnt));
 }
 
-cell* Next(cell *p){
+elmnt* Next(elmnt *p){
     return p->addr ;
 }
 
-void Ass_val(cell *p , int val){
+void Ass_val(elmnt *p , int val){
     p->value = val ;
 }
 
-void Ass_addr(cell *p , cell *q){
+void Ass_addr(elmnt *p , elmnt *q){
     p->addr = q ;
 }
 
-int value(cell *p){
+int value(elmnt *p){
     return p->value ;
 }
 

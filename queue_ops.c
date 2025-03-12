@@ -10,7 +10,7 @@
 
 
 
-/*structure of a linked lists cell will be used  as a queue*/
+/*structure of a linked lists cell will be used  as a queue of consultations inserted based on priority*/
 
 typedef struct cell typeCell;   /*type of an element in the list*/   
 
@@ -36,7 +36,7 @@ struct typeQueue
 
 /*Consultation type definitin - elements inside the queue -*/
 
-/* define a type of consultation reasons */
+/* define a type of consultation reasons each */
 typedef enum {
     work_accident,
     occupational_disease,
@@ -51,7 +51,7 @@ typedef struct consultation consultation ;
  struct consultation
  {
     char Employee_ID[8];
-    char *Employee_Name;            /*will be allocated dynamically to handle names with diffrent length */
+    char Employee_Name[50];            
     char Consultation_Time[5];         /*in the format HH:MM*/
     reason Consultation_Reason ;     /* one of the reasons in reason type*/
  };
@@ -78,8 +78,7 @@ void Ass_consultation(typeCell **k , consultation c){
 
     /*copy each field from c consultation to the cell */
     (*k)->conslt.Consultation_Reason = c.Consultation_Reason ;
-    (*k)->conslt.Employee_Name = c.Employee_Name ;
-
+    strcpy((*k)->conslt.Employee_Name, c.Employee_Name);
     strcpy((*k)->conslt.Consultation_Time , c.Consultation_Time);
     strcpy((*k)->conslt.Employee_ID, c.Employee_ID ) ;
     
@@ -157,7 +156,29 @@ void enqueue(typeQueue *Q , consultation new_conslt){
     
 } 
 void dequeue(typeQueue *Q , consultation *dequeued_conslt ){
+    typeCell *temp ;
+
+    if (!emptyQueue(*Q))
+    {
+        temp =  (*Q).h ;  /*temporary save for the head*/
+
+
+        /*copy each field from the head  consultation to the dequeued consultation*/
+        (*dequeued_conslt).Consultation_Reason = Q->h->conslt.Consultation_Reason ;
+        strcpy((*dequeued_conslt).Employee_Name , Q->h->conslt.Employee_Name);
+        strcpy((*dequeued_conslt).Consultation_Time , Q->h->conslt.Consultation_Time);
+        strcpy((*dequeued_conslt).Employee_ID, Q->h->conslt.Employee_ID ) ;
     
+        
+        Q->h = Next(Q->h);   /*move headto next */
+        free(temp);
+
+    }
+    else printf("ERROR : QUEUE IS EMPTY CANNOT DEQUEUE \n");
+
 }
+
+
+
 
 
