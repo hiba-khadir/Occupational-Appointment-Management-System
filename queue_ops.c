@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "queue_ops.h"
+#include "linked_lists_op.h"
 
 
 
@@ -131,30 +132,39 @@ int emptyQueue(typeQueue Q){
 }
 
 
-void enqueue(typeQueue *Q , consultation new_conslt){
-    typeCell *new ; 
+void enqueue(typeQueue *Q , consultation new_conslt){   /*inserts based on priority ( the queue is ordered)*/
+    typeCell *new ;
+    Ass_addr(new,NULL);
+    Ass_consultation(new,new_conslt);
 
-
-    Allocate(&new);                               /*allocate a new cell in the queue (list)*/
-    Ass_consultation(&new , new_conslt);          /*assign the consultation*/
-    Ass_addr(&new ,NULL);                         /*new is at the tail*/
-
-
-
-    if (!emptyQueue(*Q))   
-    {   
-        Ass_addr((*Q).t , new);         /*link new to tail*/
-        (*Q).t = (*Q).t -> addr ;       /*move the tail one element left*/
+    int priority = new_conslt.Consultation_Reason ; /*reason is stored as an integer can be used for priority*/
+    
+    //insertion
+    if (!emptyQueue)
+    {
+        if (priority > Q->h->conslt.Consultation_Reason)
+        {
+            
+        }
+        
         
     }
-    else       /*new is the first in the queue*/
+    else     /*new is the first element inserted*/
     {
-        Q->h = new ;
-        Q->t = new ; 
+       Q->h = new ;
+       Q->t = new ;  
     }
     
     
+
+
+
+
+
+    
 } 
+
+
 void dequeue(typeQueue *Q , consultation *dequeued_conslt ){
     typeCell *temp ;
 
@@ -174,7 +184,9 @@ void dequeue(typeQueue *Q , consultation *dequeued_conslt ){
         free(temp);
 
     }
-    else printf("ERROR : QUEUE IS EMPTY CANNOT DEQUEUE \n");
+    else {
+        printf("ERROR : QUEUE IS EMPTY CANNOT DEQUEUE \n");
+    }
 
 }
 
