@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "queue_ops.h"
-#include "linked_lists_op.h"
+
 
 
 
@@ -23,12 +23,12 @@ struct cell {
 
 
 /*dynamic implementation of the queue*/
-typedef struct typeQueue typeQueue ;  /*define queue as a type */
+typedef struct typeQueue typeQueue ;       /*define queue as a type */
 
 struct typeQueue
 {
-    typeCell *h ;                   /*pointer to the head of the queue*/
-    typeCell *t ;                   /*pointer to the head of the queue*/
+    typeCell *h ;                          /*pointer to the head of the queue*/
+    typeCell *t ;                          /*pointer to the head of the queue*/
 }; 
 
 
@@ -37,7 +37,7 @@ struct typeQueue
 
 /*Consultation type definitin - elements inside the queue -*/
 
-/* define a type of consultation reasons each */
+/* define a type of consultation reasons ordered by priority 
 typedef enum {
     work_accident,
     occupational_disease,
@@ -46,7 +46,7 @@ typedef enum {
     periodic_examination
 }  reason;
 
-
+*/
 
 typedef struct consultation consultation ;
  struct consultation
@@ -54,7 +54,8 @@ typedef struct consultation consultation ;
     char Employee_ID[8];
     char Employee_Name[50];            
     char Consultation_Time[5];         /*in the format HH:MM*/
-    reason Consultation_Reason ;     /* one of the reasons in reason type*/
+    char Consultation_Reason[21] ;   
+    int priority ;
  };
  
 /*---------------------------------------------------------------------------------*/
@@ -62,7 +63,9 @@ typedef struct consultation consultation ;
 
 
 
-/*-------------------------the linked lists model implementation----------------------------*/
+
+
+/*-------------------------the linked lists model implementation for priority queue----------------------------*/
 /*same linked list model , the type of the element in the cell is a consultation*/
 
 void Allocate(typeCell **p){
@@ -78,10 +81,11 @@ void Ass_consultation(typeCell **k , consultation c){
     int i , j ;         /*to iterate through strings*/
 
     /*copy each field from c consultation to the cell */
-    (*k)->conslt.Consultation_Reason = c.Consultation_Reason ;
+    strcpy((*k)->conslt.Consultation_Reason, c.Consultation_Reason);    
     strcpy((*k)->conslt.Employee_Name, c.Employee_Name);
     strcpy((*k)->conslt.Consultation_Time , c.Consultation_Time);
     strcpy((*k)->conslt.Employee_ID, c.Employee_ID ) ;
+    (*k)->conslt.priority = reason_priority(c.Consultation_Reason);
     
 }
 
@@ -96,24 +100,62 @@ void Ass_addr(typeCell **p , typeCell *q){
 
 void display_consultation(typeCell *k){
     char *name = k->conslt.Employee_Name ; 
-    
-    printf("Employee ID : %s \n", k->conslt.Employee_ID);
-
-    printf("Employee Name : ");
-
-    while(*name != '\0'){            /*display the name letter by letter*/
-        printf("%c",*name);
-        name++ ;
-    }
-    printf("\n");
-
+    printf("Employee's ID : %s \n",k->conslt.Employee_ID);
+    printf("Employee's name : %s \n",k->conslt.Employee_Name);
     printf("Consultation Time : %s \n", k->conslt.Consultation_Time);
-    printf("Concultation Reason : %s" , k->conslt.Consultation_Reason);
+    printf("Concultation Reason : %s \n" , k->conslt.Consultation_Reason);
+    printf("Priority : %d",k->conslt.priority);
 
 }
 
+consultation consultation_info(typeCell *k){
+    consultation c ;
+
+    strcpy(c.Consultation_Reason , k->conslt.Consultation_Reason) ;
+    strcpy(c.Employee_Name , k->conslt.Employee_Name);
+    strcpy(c.Consultation_Time , k->conslt.Consultation_Time);
+    strcpy(c.Employee_ID, k->conslt.Employee_ID ) ;
+    c.priority = k->conslt.priority;
+
+    return c ;
+}
+
+/*-----------------------------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+/*-------------------------some needed list  and queues functions----------------------------------*/
+
+
+int reason_priority(char reason[21]){ /*returns the priority of consultation reasons from 1 to 3 . returns -1 for invalid reasons*/
+
+    if(strcmp(reason,"work_accident") == 0 ){       /*compare the reason*/
+        return 3 ;
+    }          
+    else if (strcmp(reason,"occupational_disease") == 0)
+    {
+        return 2 ;
+    }
+    else if (strcmp(reason,"pre-employement_visit") == 0 || strcmp(reason,"return_to_work") == 0)
+    {
+        return 1 ;
+    }
+    else{
+        return -1 ;
+    }
+ 
+}
 
 /*------------------------------------------------------------------------------------------------*/
+
+
+
+
+
 
 
 /*-----------------------------------The Queue Model Implementation ------------------------------*/
@@ -133,19 +175,43 @@ int emptyQueue(typeQueue Q){
 
 
 void enqueue(typeQueue *Q , consultation new_conslt){   /*inserts based on priority ( the queue is ordered)*/
+    //variables
     typeCell *new ;
-    Ass_addr(new,NULL);
-    Ass_consultation(new,new_conslt);
+    typeCell *a = Q->h  ,*b=NULL ;             /*a and b are used to traverse the queue*/
 
-    int priority = new_conslt.Consultation_Reason ; /*reason is stored as an integer can be used for priority*/
+
+    //initialization
+    Allocate(new);
+    Ass_addr(new,NULL);
+    Ass_consultation(new,new_conslt);         
+
     
     //insertion
-    if (!emptyQueue)
+    if (!emptyQueue(*Q))
     {
-        if (priority > Q->h->conslt.Consultation_Reason)
+        //find isert position
+        while (a != NULL &&   new->conslt.priority <= Q->h->conslt.priority )
         {
+            b = a ;                      /* b is the previous of a */
+            a = Next(a);
+        
+        }
+
+        //linking
+        if (b == NULL)                   
+        {
+            new->addr = Q->h ;  ;          
+            Q->h = new  ; 
+             
+        }
+        else                             /*list is not empty*/
+        {
+            Ass_addr(&new,a); 
+            Ass_addr(&b,new);      
             
         }
+        
+
         
         
     }
@@ -155,14 +221,8 @@ void enqueue(typeQueue *Q , consultation new_conslt){   /*inserts based on prior
        Q->t = new ;  
     }
     
-    
-
-
-
-
-
-    
 } 
+
 
 
 void dequeue(typeQueue *Q , consultation *dequeued_conslt ){
@@ -170,22 +230,15 @@ void dequeue(typeQueue *Q , consultation *dequeued_conslt ){
 
     if (!emptyQueue(*Q))
     {
-        temp =  (*Q).h ;  /*temporary save for the head*/
-
-
-        /*copy each field from the head  consultation to the dequeued consultation*/
-        (*dequeued_conslt).Consultation_Reason = Q->h->conslt.Consultation_Reason ;
-        strcpy((*dequeued_conslt).Employee_Name , Q->h->conslt.Employee_Name);
-        strcpy((*dequeued_conslt).Consultation_Time , Q->h->conslt.Consultation_Time);
-        strcpy((*dequeued_conslt).Employee_ID, Q->h->conslt.Employee_ID ) ;
-    
-        
-        Q->h = Next(Q->h);   /*move headto next */
-        free(temp);
+        temp =  (*Q).h ;                      /*temporary save for the head*
+         /*copy each field from the head  consultation to the dequeued consultation*/ 
+        *dequeued_conslt = consultation_info(Q->h);
+        Q->h = Next(Q->h);                        /*move head to next */
+        free(temp);                               /*free the dequeued element*/
 
     }
     else {
-        printf("ERROR : QUEUE IS EMPTY CANNOT DEQUEUE \n");
+        printf("ERROR : QUEUE IS EMPTY. CANNOT DEQUEUE \n");
     }
 
 }
