@@ -9,11 +9,13 @@ typedef struct cell cell;     /*type of an element in the list*/
 struct cell {     
     char id[8];
     int consult_num;
-    int last_consult[8];
-    int return_work[8];
-    cell *addr;
+    int last_consult[10];
+    int return_work[10];
+    struct cell *addr;
+    char name[35];
+    char history[5][25];
 };
-/* lists tae history and full name mzl */
+/* koul line fiha reason, and koul reason tetkteb fe 25 letter */
 
 
 /*linked list abstract machine definitions  { Allocate , Free , Ass_val , Ass_adr , Value , Next }*/
