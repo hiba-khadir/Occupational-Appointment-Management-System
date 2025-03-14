@@ -13,11 +13,11 @@
 
 /*structure of a linked lists cell will be used  as a queue of consultations inserted based on priority*/
 
-typedef struct cell typeCell;   /*type of an element in the list*/   
+typedef struct cell typeCell;           /*type of an element in the list*/   
 
 struct cell {          
-    consultation conslt;            
-    typeCell *addr;                 /*address of next*/
+    consultation conslt;                 
+    typeCell *addr;                      /*address of next*/
 };
 
 
@@ -32,21 +32,6 @@ struct typeQueue
 }; 
 
 
-
-
-
-/*Consultation type definitin - elements inside the queue -*/
-
-/* define a type of consultation reasons ordered by priority 
-typedef enum {
-    work_accident,
-    occupational_disease,
-    return_to_work,
-    pre_employment,
-    periodic_examination
-}  reason;
-
-*/
 
 typedef struct consultation consultation ;
  struct consultation
@@ -128,19 +113,19 @@ consultation consultation_info(typeCell *k){
 
 
 
-/*-------------------------some needed list  and queues functions----------------------------------*/
+/*-------------------------list and queues functions----------------------------------*/
 
+/*returns the priority of consultation reasons from 1 to 3 . returns -1 for invalid reasons*/
+int reason_priority(char reason[21]){ 
 
-int reason_priority(char reason[21]){ /*returns the priority of consultation reasons from 1 to 3 . returns -1 for invalid reasons*/
-
-    if(strcmp(reason,"work_accident") == 0 ){       /*compare the reason*/
+    if(strcmp(reason,"work-accident") == 0 ){       /*compare the reason*/
         return 3 ;
     }          
-    else if (strcmp(reason,"occupational_disease") == 0)
+    else if (strcmp(reason,"occupational-disease") == 0)
     {
         return 2 ;
     }
-    else if (strcmp(reason,"pre-employement_visit") == 0 || strcmp(reason,"return_to_work") == 0)
+    else if (strcmp(reason,"pre-employementvisit") == 0 || strcmp(reason,"return-to-work") == 0)
     {
         return 1 ;
     }
@@ -148,6 +133,22 @@ int reason_priority(char reason[21]){ /*returns the priority of consultation rea
         return -1 ;
     }
  
+}
+
+/*reads data from text file given by a pointer into a queue*/
+void read_file_to_queue(FILE *file, typeQueue *Q ){
+    char  ID[8] , name[50] , time[5] , reason[21];
+
+
+    FILE  *cons_file =  fopen("Consultations_file","r");  /*open the file for reading. define a pointer */
+    if (cons_file == NULL)
+    {
+        printf("Can't open file error!");        
+    }
+    
+    fscanf(cons_file,"%8[^;]%50[^;]%5[^;]%21[^;]",ID,name,time,reason);  /*read the fields with ";"as delimiter*/
+    printf("ID : %s , name : %s , time: %s , reason : %s  " ,ID,name,time,reason);
+
 }
 
 /*------------------------------------------------------------------------------------------------*/

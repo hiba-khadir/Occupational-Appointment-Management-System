@@ -7,12 +7,35 @@
 void read_file_to_queue(FILE *file){
     char name[50] , time[5] , reason[21];
     int ID ;
-    while (fscanf(file,"%d;%49[^;];%4[^;];%20[^\n]",&ID,&name,&time,&reason) == 4)
+    char line[95] ;
+
+    if (fgets(line,95,file) == NULL)   /*reading failed*/
     {
-        printf("ID : %d , name : %s , time: %s , reason : %s  " ,ID,name,time,reason);
-        printf("\n");
+        fclose(file);
+        printf("incorrect line format .") ;
     }
     
+    else{
+        while (!feof(file) && fgets(line,95,file))         /*fgets not NULL -stops at the EOF*/
+        {
+            
+            if (sscanf(line,"%d;%49[^;];%4[^;];%20[^\r\n]\r\n",&ID,name,time,reason) == 4 )  /*ensure reading 4 fileds*/
+            {
+                
+
+                printf("ID : %d , name : %s , time: %s , reason : %s  " ,ID,name,time,reason);
+                printf("\n");
+            }
+            else
+            {
+                printf("DEBUGGING : %s\n",line);
+                printf("Invalid line format \n");
+            }
+            
+        }
+    }
+    
+
 }
 
 
@@ -20,11 +43,13 @@ int main(){
     FILE  *cons_file =  fopen("Consultations.txt","r");  /*open the file for reading. define a pointer */
     if (cons_file == NULL)
     {
-        printf("Can't open file error!");        
+        printf("Can't open file error!");    
+        return 1;    
     }
     else{
         read_file_to_queue(cons_file);
     }
 
-    
+    fclose(cons_file);
+    return 0 ;
 }
