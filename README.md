@@ -5,6 +5,8 @@ text files EmpRecords.txt and Consultations.txt to store information about emplo
 day's scheduled consultations.
 
 The file EmpRecords.txt contains, for each employee : 
+
+
 • Employee ID: Unique identifier (up to 8 characters) 
 • Full Name  
 • Total Number of Consultations 
