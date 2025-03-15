@@ -1,4 +1,4 @@
--------------------------------------------Occupational Health Medical Visit Management------------------------------------------------
+--------------------------------Occupational Health Medical Visit Management----------------------------------
 
 An occupational health service at an industrial company needs to automate the management 
 of medical consultations for its employees (10 consultations per day). The service uses two 
@@ -11,7 +11,6 @@ The file EmpRecords.txt contains, for each employee :
         • Employee ID: Unique identifier (up to 8 characters) 
         
         • Full Name
-        
         
         • Total Number of Consultations 
         
