@@ -13,6 +13,18 @@
 
 /*structure of a linked lists cell will be used  as a queue of consultations inserted based on priority*/
 
+typedef struct consultation consultation ;
+ struct consultation
+ {
+    char Employee_ID[8];
+    char Employee_Name[50];            
+    char Consultation_Time[5];         /*in the format HH:MM*/
+    char Consultation_Reason[21] ;   
+    int priority ;
+ };
+
+
+
 typedef struct cell typeCell;           /*type of an element in the list*/   
 
 struct cell {          
@@ -23,25 +35,18 @@ struct cell {
 
 
 /*dynamic implementation of the queue*/
-typedef struct typeQueue typeQueue ;       /*define queue as a type */
+
 
 struct typeQueue
 {
     typeCell *h ;                          /*pointer to the head of the queue*/
     typeCell *t ;                          /*pointer to the head of the queue*/
 }; 
+typedef struct typeQueue typeQueue ;       /*define queue as a type */
 
 
 
-typedef struct consultation consultation ;
- struct consultation
- {
-    char Employee_ID[8];
-    char Employee_Name[50];            
-    char Consultation_Time[5];         /*in the format HH:MM*/
-    char Consultation_Reason[21] ;   
-    int priority ;
- };
+
  
 /*---------------------------------------------------------------------------------*/
 
@@ -53,15 +58,22 @@ typedef struct consultation consultation ;
 /*-------------------------the linked lists model implementation for priority queue----------------------------*/
 /*same linked list model , the type of the element in the cell is a consultation*/
 
+
+/*allocate a memory space return its address in p*/
 void Allocate(typeCell **p){
     *p = malloc(sizeof(typeCell));
 }
 
+
+
+/*gives the address of the next cell after p*/
 typeCell* Next(typeCell *p){
     return p->addr ;
 }
 
 
+
+/*assigns the consultation field into *k an  element of the list */
 void Ass_consultation(typeCell **k , consultation c){
     int i , j ;         /*to iterate through strings*/
 
@@ -75,6 +87,11 @@ void Ass_consultation(typeCell **k , consultation c){
 }
 
 
+
+
+
+
+/*assigns the address field into *k an  element of the list */
 void Ass_addr(typeCell **p , typeCell *q){
     (*p)->addr = q ;
 
@@ -82,7 +99,7 @@ void Ass_addr(typeCell **p , typeCell *q){
 
 
 
-
+/*displays an element of type consultation*/
 void display_consultation(typeCell *k){
     char *name = k->conslt.Employee_Name ; 
     printf("Employee's ID : %s \n",k->conslt.Employee_ID);
@@ -93,6 +110,8 @@ void display_consultation(typeCell *k){
 
 }
 
+
+/*returns the consultation field inside the list element k*/
 consultation consultation_info(typeCell *k){
     consultation c ;
 
@@ -116,40 +135,58 @@ consultation consultation_info(typeCell *k){
 /*-------------------------list and queues functions----------------------------------*/
 
 /*returns the priority of consultation reasons from 1 to 3 . returns -1 for invalid reasons*/
+/*note to me : remember to fix this later to manage upper and lower case :) */
+
 int reason_priority(char reason[21]){ 
 
-    if(strcmp(reason,"work-accident") == 0 ){       /*compare the reason*/
-        return 3 ;
+    if(strcmp(reason,"Work-accident") == 0 ){       /*compare the reason*/
+        return 4 ;
     }          
-    else if (strcmp(reason,"occupational-disease") == 0)
+    else if (strcmp(reason,"Occupational-disease") == 0)
+    {
+        return 3;
+    }
+    else if (strcmp(reason,"Pre-employement") == 0 || strcmp(reason,"Return-to-Work") == 0)
     {
         return 2 ;
     }
-    else if (strcmp(reason,"pre-employementvisit") == 0 || strcmp(reason,"return-to-work") == 0)
+    else if (strcmp(reason,"Periodic") == 0 )
     {
         return 1 ;
     }
+    
     else{
         return -1 ;
     }
  
 }
 
-/*reads data from text file given by a pointer into a queue*/
-void read_file_to_queue(FILE *file, typeQueue *Q ){
-    char  ID[8] , name[50] , time[5] , reason[21];
 
 
-    FILE  *cons_file =  fopen("Consultations_file","r");  /*open the file for reading. define a pointer */
-    if (cons_file == NULL)
-    {
-        printf("Can't open file error!");        
-    }
+/*reads data from text file given by a pointer into a queue*/    
+void read_file_to_queue(FILE *file,typeQueue *Q){
     
-    fscanf(cons_file,"%8[^;]%50[^;]%5[^;]%21[^;]",ID,name,time,reason);  /*read the fields with ";"as delimiter*/
-    printf("ID : %s , name : %s , time: %s , reason : %s  " ,ID,name,time,reason);
+    char line[90];
+    int fields ;    /*{ID, name , time , reason ..}*/
+    consultation temp ;   /*store te retrieved data temporarly*/
+    
 
-}
+    while (fgets(line,sizeof(line),file) != NULL)         /*fgets not NULL -stops at the EOF*/
+        {
+            
+            if (fields = sscanf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]\n",temp.Employee_ID,temp.Employee_Name,temp.Consultation_Time,temp.Consultation_Reason ) == 4 )  /*ensure reading 4 fields*/
+            {
+                enqueue(Q,temp); /*add to priority queue*/
+            }
+
+           else
+            {
+                printf("Invalid line format \n");
+                printf("%d",fields);   /*how many fields were read */
+            }
+            
+        }
+    }
 
 /*------------------------------------------------------------------------------------------------*/
 
@@ -170,21 +207,30 @@ typeQueue createQueue(){
     return  Q ;
 }
 
+
+
+
+/*returns 1 if the list is empty and 0 otherwise*/
 int emptyQueue(typeQueue Q){
-    return (Q.h == NULL) ;       /*returns 1 if the list is empty and 0 otherwise*/
+    return (Q.h == NULL) ;       
 }
 
 
-void enqueue(typeQueue *Q , consultation new_conslt){   /*inserts based on priority ( the queue is ordered)*/
+
+
+
+/*inserts based on priority ( the queue is ordered)*/
+
+void enqueue(typeQueue *Q , consultation new_conslt){   
     //variables
     typeCell *new ;
-    typeCell *a = Q->h  ,*b=NULL ;             /*a and b are used to traverse the queue*/
+    typeCell *a = Q->h ,*b=NULL ;             /*a and b are used to traverse the queue*/
 
 
     //initialization
-    Allocate(new);
-    Ass_addr(new,NULL);
-    Ass_consultation(new,new_conslt);         
+    Allocate(&new);
+    Ass_addr(&new,NULL);
+    Ass_consultation(&new,new_conslt);         
 
     
     //insertion
@@ -223,6 +269,8 @@ void enqueue(typeQueue *Q , consultation new_conslt){   /*inserts based on prior
     }
     
 } 
+        
+
 
 
 

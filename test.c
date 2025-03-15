@@ -218,7 +218,6 @@ void read_file_to_queue(FILE *file,typeQueue *Q){
                 printf("ID : %s,name : %s,time: %s,reason : %s  " ,temp.Employee_ID,temp.Employee_Name,temp.Consultation_Time,temp.Consultation_Reason );
             
                 enqueue(Q,temp);
-                dequeue(Q,&result);
                 printf(" , priority : %d",result.priority);
                 printf("\n");
             }
