@@ -159,7 +159,7 @@ void print_in_groups(struct emp *head) {
 }
 
 int main() {
-    FILE *f = fopen("C:\\Users\\daass\\OneDrive\\Documents\\tp2\\EmpRecords.txt", "r");
+    FILE *f = fopen("C:\\Users\\daass\\OneDrive\\Documents\\tp2\\EmpRecords.txt", "r"); //here the path to the file
     struct emp *h = load_employees(f);
     fclose(f);
     h = add_employee(h);
