@@ -15,14 +15,12 @@ struct emp {
 struct emp *findEmp(struct emp *h, char id[]) {
     struct emp *p = h;
     while (p != NULL) {
-        if (p->id == id) {
+        if (strcmp(p->id, id) == 0) {
             return p;
         }
         p = p->adr;
     }
-    if (p == NULL) {
-        return NULL;
-    }
+    return NULL;
 }
 
 void updateHistory(struct emp *h, char id[], char reason[]) {
@@ -53,7 +51,7 @@ struct emp *changeConsultNum(int n, char id[], struct emp *h) {
     p = findEmp(h, id);
     if (p != NULL) {
         p->consult_num = n;
-    } else {                           //case of nonexistent emp
+    } else {
         printf(" Employee doesn't exist \n");
     }
 }
@@ -62,8 +60,8 @@ struct emp *changeLastConsult(char lastConsult[], char id[], struct emp *h) {
     struct emp *p;
     p = findEmp(h, id);
     if (p != NULL) {
-        strncpy(p->last_consult, lastConsult, sizeof(p->last_consult) - 1);  //doesnt copy extra characters
-        p->last_consult[sizeof(p->last_consult) - 1] = '\0';                 //make sure it's well terminated so it doesn't print garbage
+        strncpy(p->last_consult, lastConsult, sizeof(p->last_consult) - 1);
+        p->last_consult[sizeof(p->last_consult) - 1] = '\0';
     } else {
         printf(" Employee doesn't exist \n");
     }
@@ -80,19 +78,90 @@ struct emp *changeReturnWork(char returnWork[], char id[], struct emp *h) {
     }
 }
 
+void updateEmp(struct emp *h, char id[]) {
+    struct emp *p = findEmp(h, id);
+    if (p == NULL) {
+        printf(" Employee with id %s doesn't work here.\n", id);
+    } else {
+        int choice;
+        char newDate[11];
+        char newReason[25];
+        char newId[9];
+        char newName[35];
+        int newConsult;
+
+        printf(" What do you want to update?\n");
+        printf(" 1. Id\n");
+        printf(" 2. Name\n");
+        printf(" 3. Consult Number\n");
+        printf(" 4. Last Consult Date\n");
+        printf(" 5. Return To Work Date\n");
+        printf(" 6. Medical History\n");
+        printf(" 7. None (input error)\n");
+        printf(" Enter your choice: ");
+        scanf("%d", &choice);
+        getchar();
+
+        switch (choice) {
+            case 1:
+                printf(" Enter new id: ");
+                scanf("%8s", newId);
+                strcpy(p->id, newId);
+                break;
+            case 2:
+                printf(" Enter new Name: ");
+                fgets(newName, sizeof(newName), stdin);
+                newName[strcspn(newName, "\n")] = '\0';
+                strcpy(p->name, newName);
+                break;
+            case 3:
+                while (1) { //infinite loop that we will exit using break
+                    printf(" Enter new consult number: ");
+                    if (scanf("%d", &newConsult) == 1) {
+                        break;
+                    } else {
+                        printf(" You need to enter a number please.\n");   //loop till they enter an integer
+                        while (getchar() != '\n');   //clear buffer to not mess up next scanf
+                    }
+                }
+                changeConsultNum(newConsult, id, h);
+                break;
+            case 4:
+                printf(" Enter new last consult date: ");
+                scanf("%10s", newDate);
+                changeLastConsult(newDate, id, h);
+                break;
+            case 5:
+                printf(" Enter new return to work date: ");
+                scanf("%10s", newDate);
+                changeReturnWork(newDate, id, h);
+                break;
+            case 6:
+                printf(" Enter new medical reason: ");
+                fgets(newReason, sizeof(newReason), stdin);
+                newReason[strcspn(newReason, "\n")] = '\0';
+                updateHistory(h, id, newReason);
+                break;
+            default:
+                printf(" Update canceled due to input error\n");
+                break;
+        }
+    }
+}
+
 void deleteEmp(struct emp **h, char deleted_id[]) {
     struct emp *p = *h;
     struct emp *q;
 
-    if ((p != NULL) && strcmp(p->id, deleted_id) == 0) {  // Employee at head
+    if ((p != NULL) && strcmp(p->id, deleted_id) == 0) {
         *h = p->adr;
         free(p);
         printf(" Employee %s got deleted successfully.\n", deleted_id);
     } else {
-        q = findEmp(*h, deleted_id);  // Find the employee
+        q = findEmp(*h, deleted_id);
         if (q != NULL) {
             p = *h;
-            while (p->adr != q) {  // Find the one before it
+            while (p->adr != q) {
                 p = p->adr;
             }
             p->adr = q->adr;
@@ -108,7 +177,7 @@ struct emp* addEmp(struct emp *h) {
     struct emp *p = (struct emp*)malloc(sizeof(struct emp));
     char choice;
     p->adr = NULL;
-    memset(p, 0, sizeof(struct emp)); //so our fields aren't filled with garbage from memory
+    memset(p, 0, sizeof(struct emp));
 
     printf(" Enter Id: ");
     scanf("%8s", p->id);
@@ -118,9 +187,17 @@ struct emp* addEmp(struct emp *h) {
     fgets(p->name, sizeof(p->name), stdin);
     p->name[strcspn(p->name, "\n")] = '\0';
 
-    printf(" Enter consult number: ");
-    scanf("%d", &p->consult_num);
-
+    int num;
+    while (1) { //infite loop that we're gonna exit using break
+        printf(" Enter consult number: ");
+        if (scanf("%d", &num) == 1) {
+            break;
+        } else {
+            printf(" You need to enter a number please.\n");   //make sure we read an int
+            while (getchar() != '\n'); //clear the buffer so we don't mess up future scanf
+    }
+    p->consult_num = num;
+    }
     printf(" Enter last consultation date: ");
     scanf("%10s", p->last_consult);
 
@@ -137,7 +214,6 @@ struct emp* addEmp(struct emp *h) {
         printf(" History %d (press enter to stop): ", i + 1);
         fgets(p->history[i], sizeof(p->history[i]), stdin);
         p->history[i][strcspn(p->history[i], "\n")] = '\0';
-
         if (p->history[i][0] == '\0') {
             for (int j = i; j < 5; j++) p->history[j][0] = '\0';
             break;
@@ -165,7 +241,7 @@ struct emp* createEmp() {
 void readLine(struct emp *p, char *line) {
     int i = 0;
     int k = 0;
-    char num[3]; //Holds 2 digits number
+    char num[3];
 
     sscanf(line + i, "%[^;]", p->id);
     i = i + strlen(p->id) + 1;
@@ -238,7 +314,6 @@ void printInGrp(struct emp *h) {
         printEmp(p);
         cpt++;
         p = p->adr;
-
         if (cpt % 2 == 0 && p != NULL) {
             printf(" Show more? (y/n?): ");
             scanf(" %c", &choice);
@@ -252,9 +327,9 @@ int main() {
     FILE *f = fopen("C:\\Users\\daass\\OneDrive\\Documents\\tp2\\EmpRecords.txt", "r");
     struct emp *h = loadEmp(f);
     fclose(f);
-    //h = addEmp(h);
+    // h = addEmp(h);
     char id[] = "12345678";
-    deleteEmp(&h, id);
+    updateEmp(h, id);
     printInGrp(h);
     return 0;
 }
