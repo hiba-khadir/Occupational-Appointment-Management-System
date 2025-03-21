@@ -20,7 +20,7 @@ typedef struct consultation consultation ;
     char Employee_Name[50];            
     char Consultation_Time[5];         /*in the format HH:MM*/
     char Consultation_Reason[21] ;   
-    int priority ;
+    
  };
 
 
@@ -30,6 +30,7 @@ typedef struct cell typeCell;           /*type of an element in the list*/
 struct cell {          
     consultation conslt;                 
     typeCell *addr;                      /*address of next*/
+    int priority ;                       /*priority of the appointement*/
 };
 
 
@@ -82,7 +83,7 @@ void Ass_consultation(typeCell **k , consultation c){
     strcpy((*k)->conslt.Employee_Name, c.Employee_Name);
     strcpy((*k)->conslt.Consultation_Time , c.Consultation_Time);
     strcpy((*k)->conslt.Employee_ID, c.Employee_ID ) ;
-    (*k)->conslt.priority = reason_priority(c.Consultation_Reason);
+    (*k)->priority = reason_priority(c.Consultation_Reason);
     
 }
 
@@ -100,13 +101,31 @@ void Ass_addr(typeCell **p , typeCell *q){
 
 
 /*displays an element of type consultation*/
-void display_consultation(typeCell *k){
-    char *name = k->conslt.Employee_Name ; 
-    printf("Employee's ID : %s \n",k->conslt.Employee_ID);
-    printf("Employee's name : %s \n",k->conslt.Employee_Name);
-    printf("Consultation Time : %s \n", k->conslt.Consultation_Time);
-    printf("Concultation Reason : %s \n" , k->conslt.Consultation_Reason);
-    printf("Priority : %d",k->conslt.priority);
+void display_consultation(typeCell k){
+    char *name = k.conslt.Employee_Name ; 
+    printf("Employee's ID : %s \n",k.conslt.Employee_ID);
+    printf("Employee's name : %s \n",k.conslt.Employee_Name);
+    printf("Consultation Time : %s \n", k.conslt.Consultation_Time);
+    printf("Concultation Reason : %s \n" , k.conslt.Consultation_Reason);
+    printf("Priority : %d",k.priority);
+
+}
+
+
+/*displays the queue*/
+void display_queue(typeQueue Q){
+    typeCell *p = Q.h ;
+    int cpt = 1 ;
+
+    while (p != NULL)
+    {   
+        printf("\n");
+        printf("appointment %d : \n ", cpt);
+        display_consultation(*p);
+        p = Next(p);
+        cpt++ ;
+    }
+
 
 }
 
@@ -119,7 +138,6 @@ consultation consultation_info(typeCell *k){
     strcpy(c.Employee_Name , k->conslt.Employee_Name);
     strcpy(c.Consultation_Time , k->conslt.Consultation_Time);
     strcpy(c.Employee_ID, k->conslt.Employee_ID ) ;
-    c.priority = k->conslt.priority;
 
     return c ;
 }
@@ -163,7 +181,7 @@ int reason_priority(char reason[21]){
 
 
 
-/*reads data from text file given by a pointer into a queue*/    
+/*reads data from text file given by a pointer into a queue*/      
 void read_file_to_queue(FILE *file,typeQueue *Q){
     
     char line[90];
@@ -176,7 +194,7 @@ void read_file_to_queue(FILE *file,typeQueue *Q){
             
             if (fields = sscanf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]\n",temp.Employee_ID,temp.Employee_Name,temp.Consultation_Time,temp.Consultation_Reason ) == 4 )  /*ensure reading 4 fields*/
             {
-                enqueue(Q,temp); /*add to priority queue*/
+               enqueue(Q,temp); /*add to priority queue*/
             }
 
            else
@@ -188,6 +206,65 @@ void read_file_to_queue(FILE *file,typeQueue *Q){
         }
     }
 
+
+
+
+
+
+
+//returns in p and q the address of the cell contationing consultation c  and th eprevious cell respectivly 
+
+void access_consultation(typeQueue Q ,consultation c, typeCell* *q, typeCell* *p){
+    *q=NULL;                         /*pointer to the previous cell*/
+    *p= Q.h;                       /* pointer to the current cell*/
+    int found = 0 ;                 /*control boolean*/
+
+    while (*p != NULL && found == 0 ){        /*traverse the list*/
+
+        if (strcmp((*p)->conslt.Employee_ID,c.Employee_ID) == 0 )        /*test if the appointement is found*/
+        {
+            found = 1;                          /*update the boolean*/
+        }
+        else{
+            *q = *p ;                      /*move to next cell*/
+            *p = (*p)->addr ;
+        }
+        
+    }
+    
+    printf("found : %d",found);
+
+}
+
+
+
+
+
+
+/* deletes an appointment of the queue given the consultation info */
+//remember to fix this later to delete given only one field (name , id or time )
+
+void cancel_appointment(typeQueue *Q , consultation appointment){
+    typeCell *b, *a ;
+
+    access_consultation(*Q,appointment,&a,&b);
+
+    if (b != NULL)             /*then the value was found and the list is not empty  */
+    {  
+         if( a == NULL){       /*the Cell to delete is the head*/
+            Q->h = b->addr ;  
+        } 
+        
+        else                  
+        {
+            a->addr = b->addr ;  /*link previous to next */
+        }
+        
+        free(b);
+     
+    }
+  
+} 
 /*------------------------------------------------------------------------------------------------*/
 
 
@@ -221,7 +298,7 @@ int emptyQueue(typeQueue Q){
 
 /*inserts based on priority ( the queue is ordered)*/
 
-void enqueue(typeQueue *Q , consultation new_conslt){   
+void enqueue(typeQueue *Q , consultation new_conslt){   /*inserts based on priority ( the queue is ordered)*/
     //variables
     typeCell *new ;
     typeCell *a = Q->h ,*b=NULL ;             /*a and b are used to traverse the queue*/
@@ -230,67 +307,57 @@ void enqueue(typeQueue *Q , consultation new_conslt){
     //initialization
     Allocate(&new);
     Ass_addr(&new,NULL);
-    Ass_consultation(&new,new_conslt);         
+    Ass_consultation(&new,new_conslt);  
 
     
     //insertion
-    if (!emptyQueue(*Q))
+    //find isert position
+    while (a != NULL &&   (new->priority <= a->priority ))
     {
-        //find isert position
-        while (a != NULL &&   new->conslt.priority <= Q->h->conslt.priority )
-        {
-            b = a ;                      /* b is the previous of a */
-            a = Next(a);
-        
-        }
-
-        //linking
-        if (b == NULL)                   
-        {
-            new->addr = Q->h ;  ;          
-            Q->h = new  ; 
-             
-        }
-        else                             /*list is not empty*/
-        {
-            Ass_addr(&new,a); 
-            Ass_addr(&b,new);      
-            
-        }
-        
-
-        
-        
-    }
-    else     /*new is the first element inserted*/
-    {
-       Q->h = new ;
-       Q->t = new ;  
+        b = a ;                      /* b is the previous of a */
+        a = Next(a);        
     }
     
-} 
+
+    //linking 
+
+    if (b != NULL)  //insert at the middle or end
+    {
+        Ass_addr(&b,new);
+        Ass_addr(&new,a);   
+
+        if (a == NULL)   //insert at the end
+        {
+           Q->t = new ;  //update the tail 
+        }
+        
+    }
+
+    else       // b = NIL
+    {
+        if (a == NULL)   //the queue was initially empty
+        {
+            /*new is the first element inserted*/
+            Q->h = new ;
+            Q->t = new ;  
+            
+        }
+
+        else{        //insert at the head 
+            Ass_addr(&new,Q->h);
+            Q->h = new ;    //update the head
+
+        }
+        
+    }
+}
         
 
 
 
 
-void dequeue(typeQueue *Q , consultation *dequeued_conslt ){
-    typeCell *temp ;
 
-    if (!emptyQueue(*Q))
-    {
-        temp =  (*Q).h ;                      /*temporary save for the head*
-         /*copy each field from the head  consultation to the dequeued consultation*/ 
-        *dequeued_conslt = consultation_info(Q->h);
-        Q->h = Next(Q->h);                        /*move head to next */
-        free(temp);                               /*free the dequeued element*/
 
-    }
-    else {
-        printf("ERROR : QUEUE IS EMPTY. CANNOT DEQUEUE \n");
-    }
-
-}
 
 
 
