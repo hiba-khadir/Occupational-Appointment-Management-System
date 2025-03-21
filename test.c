@@ -20,7 +20,6 @@ typedef struct consultation consultation ;
     char Employee_Name[50];            
     char Consultation_Time[6];         /*in the format HH:MM*/
     char Consultation_Reason[21] ;   
-    int priority ;
  };
 
 
@@ -30,6 +29,7 @@ typedef struct cell typeCell;           /*type of an element in the list*/
 struct cell {          
     consultation conslt;                 
     typeCell *addr;                      /*address of next*/
+    int priority ;               /*priority of the consultation*/
 };
 
 
@@ -89,14 +89,13 @@ int reason_priority(char reason[21]){
 }
 
 void Ass_consultation(typeCell **k , consultation c){
-    int i , j ;         /*to iterate through strings*/
 
     /*copy each field from c consultation to the cell */
     strcpy((*k)->conslt.Consultation_Reason, c.Consultation_Reason);    
     strcpy((*k)->conslt.Employee_Name, c.Employee_Name);
     strcpy((*k)->conslt.Consultation_Time , c.Consultation_Time);
     strcpy((*k)->conslt.Employee_ID, c.Employee_ID ) ;
-    (*k)->conslt.priority = reason_priority(c.Consultation_Reason);
+    (*k)->priority = reason_priority(c.Consultation_Reason); //assign priority based on the reason
     
 }
 
@@ -107,7 +106,6 @@ consultation consultation_info(typeCell *k){
     strcpy(c.Employee_Name , k->conslt.Employee_Name);
     strcpy(c.Consultation_Time , k->conslt.Consultation_Time);
     strcpy(c.Employee_ID, k->conslt.Employee_ID ) ;
-    c.priority = k->conslt.priority;
 
     return c ;
 }
@@ -132,6 +130,16 @@ int emptyQueue(typeQueue Q){
     return (Q.h == NULL) ;       /*returns 1 if the list is empty and 0 otherwise*/
 }
 
+void display_consultation(typeCell k){
+    char *name = k.conslt.Employee_Name ; 
+    printf("Employee's ID : %s , ",k.conslt.Employee_ID);
+    printf("Employee's name : %s , ",k.conslt.Employee_Name);
+    printf("Consultation Time : %s , ", k.conslt.Consultation_Time);
+    printf("Concultation Reason : %s , " , k.conslt.Consultation_Reason);
+    printf("Priority : %d \n",k.priority);
+
+}
+
 
 void enqueue(typeQueue *Q , consultation new_conslt){   /*inserts based on priority ( the queue is ordered)*/
     //variables
@@ -142,45 +150,144 @@ void enqueue(typeQueue *Q , consultation new_conslt){   /*inserts based on prior
     //initialization
     Allocate(&new);
     Ass_addr(&new,NULL);
-    Ass_consultation(&new,new_conslt);         
+    Ass_consultation(&new,new_conslt);  
 
     
     //insertion
-    if (!emptyQueue(*Q))
+    //find isert position
+    while (a != NULL &&   (new->priority <= a->priority ))
     {
-        //find isert position
-        while (a != NULL &&   new->conslt.priority <= Q->h->conslt.priority )
-        {
-            b = a ;                      /* b is the previous of a */
-            a = Next(a);
-        
-        }
-
-        //linking
-        if (b == NULL)                   
-        {
-            new->addr = Q->h ;  ;          
-            Q->h = new  ; 
-             
-        }
-        else                             /*list is not empty*/
-        {
-            Ass_addr(&new,a); 
-            Ass_addr(&b,new);      
-            
-        }
-        
-
-        
-        
-    }
-    else     /*new is the first element inserted*/
-    {
-       Q->h = new ;
-       Q->t = new ;  
+        b = a ;                      /* b is the previous of a */
+        a = Next(a);        
     }
     
+
+    //linking 
+
+    if (b != NULL)  //insert at the middle or end
+    {
+        Ass_addr(&b,new);
+        Ass_addr(&new,a);   
+
+        if (a == NULL)   //insert at the end
+        {
+           Q->t = new ;  //update the tail 
+        }
+        
+    }
+
+    else       // b = NIL
+    {
+        if (a == NULL)   //the queue was initially empty
+        {
+            /*new is the first element inserted*/
+            Q->h = new ;
+            Q->t = new ;  
+            
+        }
+
+        else{        //insert at the head 
+            Ass_addr(&new,Q->h);
+            Q->h = new ;    //update the head
+
+        }
+        
+    }
+}
+    
+    
+/*reads data from text file given by a pointer into a queue*/    
+void read_file_to_queue(FILE *file,typeQueue *Q){
+    
+    char line[90];
+    int fields ;    /*{ID, name , time , reason ..}*/
+    consultation temp ;   /*store te retrieved data temporarly*/
+    
+
+    while (fgets(line,sizeof(line),file) != NULL)         /*fgets not NULL -stops at the EOF*/
+        {
+            
+            if (fields = sscanf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]\n",temp.Employee_ID,temp.Employee_Name,temp.Consultation_Time,temp.Consultation_Reason ) == 4 )  /*ensure reading 4 fields*/
+            {
+               enqueue(Q,temp); /*add to priority queue*/
+            }
+
+           else
+            {
+                printf("Invalid line format \n");
+                printf("%d",fields);   /*how many fields were read */
+            }
+            
+        }
+    }
+
+
+/*displays the queue*/
+void display_queue(typeQueue Q){
+    typeCell *p = Q.h ;
+    int cpt = 1 ;
+
+    while (p != NULL)
+    {   
+        printf("\n");
+        printf("appointment %d : \n ", cpt);
+        display_consultation(*p);
+        p = Next(p);
+        cpt++ ;
+    }
+
+
+}
+
+
+void access_consultation(typeQueue Q ,consultation c, typeCell* *q, typeCell* *p){
+    *q=NULL;                         /*pointer to the previous cell*/
+    *p= Q.h;                       /* pointer to the current cell*/
+    int found = 0 ;                 /*control boolean*/
+
+    while (*p != NULL && found == 0 ){        /*traverse the list*/
+
+        if (strcmp((*p)->conslt.Employee_ID,c.Employee_ID) == 0 )        /*test if the appointement is found*/
+        {
+            found = 1;                          /*update the boolean*/
+        }
+        else{
+            *q = *p ;                      /*move to next cell*/
+            *p = (*p)->addr ;
+        }
+        
+    }
+    
+    printf("found : %d",found);
+
+}
+
+
+void cancel_appointment(typeQueue *Q , consultation appointment){
+    typeCell *b, *a ;
+
+    access_consultation(*Q,appointment,&a,&b);
+
+    if (b != NULL)             /*then the value was found and the list is not empty  */
+    {  
+         if( a == NULL){       /*the Cell to delete is the head*/
+            Q->h = b->addr ;  
+        } 
+        
+        else                  
+        {
+            a->addr = b->addr ;  /*link previous to next */
+        }
+        
+        free(b);
+     
+    }
+  
 } 
+
+
+
+
 void dequeue(typeQueue *Q , consultation *dequeued_conslt ){
     typeCell *temp ;
 
@@ -201,50 +308,45 @@ void dequeue(typeQueue *Q , consultation *dequeued_conslt ){
 
 
 
-/*reads data from text file given by a pointer into a queue*/    
-void read_file_to_queue(FILE *file,typeQueue *Q){
-    
-    char line[90];
-    int fields ;
-    consultation temp , result ;   /*store te retrieved data temporarly*/
-    
-
-    while (fgets(line,sizeof(line),file) != NULL)         /*fgets not NULL -stops at the EOF*/
-        {
-            
-            if (fields = sscanf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]\n",temp.Employee_ID,temp.Employee_Name,temp.Consultation_Time,temp.Consultation_Reason ) == 4 )  /*ensure reading 4 fileds*/
-            {
-        
-                printf("ID : %s,name : %s,time: %s,reason : %s  " ,temp.Employee_ID,temp.Employee_Name,temp.Consultation_Time,temp.Consultation_Reason );
-            
-                enqueue(Q,temp);
-                printf(" , priority : %d",result.priority);
-                printf("\n");
-            }
-           else
-            {
-                printf("DEBUGGING : %s\n",line);
-                printf("Invalid line format \n");
-                printf("%d",fields);   /*what field is missing */
-            }
-            
-        }
-    }
-
-
 
 int main(){
     typeQueue queue = createQueue();
-    FILE  *cons_file =  fopen("Consultations.txt","r");  /*open the file for reading. define a pointer */
+    consultation appointement ;
+
+    /*strcpy(appointement.Employee_ID,"23456789");
+    printf("employee ID to delete : %s",appointement.Employee_ID);*/
+
+    FILE  *cons_file =  fopen("Consultations.txt","r");  
 
     if (cons_file == NULL)
     {
         printf("Can't open file error!");    
         return 1;    
     }
+
+
     else{
+        printf("read file to queue  : \n \n");
         read_file_to_queue(cons_file,&queue);
+        printf("\nQueue before dequeuing : \n");
+        display_queue(queue);
+        printf("Queue after dequeue: \n");
+        dequeue(&queue,&appointement);
+        display_queue(queue);
+        printf("ID : %s , Name : %s , Time : %s , reason : %s \n ", appointement.Employee_ID, appointement.Employee_Name , appointement.Consultation_Time , appointement.Consultation_Reason);
+
     }
+
+    
+
+
+
+
+
+
+    
+
+
 
     fclose(cons_file);
     return 0 ;
