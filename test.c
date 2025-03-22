@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h> 
 #include "queue_ops.h"
 
 
@@ -18,7 +19,7 @@ typedef struct consultation consultation ;
  {
     char Employee_ID[9];
     char Employee_Name[50];            
-    char Consultation_Time[6];         /*in the format HH:MM*/
+    char Consultation_Time[6] ;     //Time is stored as an integer in the format hhmm
     char Consultation_Reason[21] ;   
  };
 
@@ -87,6 +88,39 @@ int reason_priority(char reason[21]){
     }
  
 }
+
+
+char* time_string(int time) {
+    static char str_time[6];  
+
+    // Validate time format
+    if (time >= 0 && time <= 2359) {
+        sprintf(str_time, "%dh%d", time / 100, time % 100);  
+    } else {
+        strcpy(str_time, "ERROR");
+    }
+
+    return str_time;
+}
+    
+
+int time_int(char* str_time) {
+    int min, hour;
+
+    // extract hours and minutes
+    if (sscanf(str_time, "%dh%d", &hour, &min) != 2) {
+        return -1;  // Incorrect format
+    }
+
+    // validate houra and minutes
+    if (hour < 0 || hour > 23 || min < 0 || min > 59) {
+        return -1;
+    }
+
+    return (hour * 100 + min);
+}
+
+
 
 void Ass_consultation(typeCell **k , consultation c){
 
@@ -308,13 +342,110 @@ void dequeue(typeQueue *Q , consultation *dequeued_conslt ){
 
 
 
+void clear()   //clear input buffer
+{
+    while ( getchar() != '\n' );
+}
+
+
+void add_appointment(typeQueue *Q){
+    
+    consultation temp ;  /*store data temporarly */
+
+    int reason ,valid_choice = 0;
+
+    printf("---------------New Appointement----------------\n\n");
+
+    printf("Employee's ID : ");
+    scanf("%s",temp.Employee_ID) ;   
+    printf("\n");
+    clear();
+
+
+    printf("Employee's Name : "); 
+
+    fgets(temp.Employee_Name, sizeof(temp.Employee_Name), stdin);    // handles the spaces in the name
+
+    int len = strlen(temp.Employee_Name);      //lentgh of the name 
+
+    if (len > 0 && temp.Employee_Name[len - 1] == '\n') {   //remove trailing new lines
+
+        temp.Employee_Name[len - 1] = '\0';
+    }
+    
+    printf("Consultation Time (ex : 9h20) : ");
+    scanf("%s",temp.Consultation_Time) ;    
+    printf("\n");
+    clear();
+
+
+    //reapeat until a valide coice is entered
+
+    do
+    {
+        
+        printf("Consultation Reason : \n");
+        printf("    choose one of the following reasons :\n");
+        printf("        1- Work Accident\n");
+        printf("        2- Occupational Disease\n");
+        printf("        3- Pre-employment Visit\n");
+
+        
+
+        if (scanf("%d", &reason) != 1)   //if a non integer is entered
+        {
+            printf("Invalid choice : please choose from the above (1 , 2 or 3)\n");
+            //reset reason
+            clear();
+
+        }
+
+        else{
+         //assign the reason based on user'a choice 
+        switch (reason)
+        {
+        case 1:
+            strcpy(temp.Consultation_Reason,"Work-accident");
+            valid_choice = 1 ; 
+            break;
+    
+        case 2:
+            strcpy(temp.Consultation_Reason,"Occupational-disease"); 
+            valid_choice = 1 ;   
+            break;
+    
+        case 3:
+            strcpy(temp.Consultation_Reason,"Pre-employement"); 
+            valid_choice = 1 ;  
+            break;
+
+        default:
+            printf("Invalid choice : please choose from the above (1 , 2 or 3)\n");
+            break;
+        }
+
+        }        
+
+       
+    } while (!(valid_choice));
+    
+
+
+       
+    enqueue(Q,temp);      // add based on priority  
+
+}
+
+
+
 
 int main(){
     typeQueue queue = createQueue();
+
     consultation appointement ;
 
-    /*strcpy(appointement.Employee_ID,"23456789");
-    printf("employee ID to delete : %s",appointement.Employee_ID);*/
+    strcpy(appointement.Employee_ID,"23456789");
+    printf("employee ID to delete : %s",appointement.Employee_ID);
 
     FILE  *cons_file =  fopen("Consultations.txt","r");  
 
@@ -326,15 +457,18 @@ int main(){
 
 
     else{
-        printf("read file to queue  : \n \n");
+        printf("read file to queue  : \n ");
         read_file_to_queue(cons_file,&queue);
-        printf("\nQueue before dequeuing : \n");
-        display_queue(queue);
-        printf("Queue after dequeue: \n");
-        dequeue(&queue,&appointement);
-        display_queue(queue);
-        printf("ID : %s , Name : %s , Time : %s , reason : %s \n ", appointement.Employee_ID, appointement.Employee_Name , appointement.Consultation_Time , appointement.Consultation_Reason);
 
+        printf("\nQueue before adding appointment: \n");
+        display_queue(queue);
+        
+        printf("Queue after : \n");
+        add_appointment(&queue);
+        display_queue(queue);
+
+   
+        
     }
 
     
