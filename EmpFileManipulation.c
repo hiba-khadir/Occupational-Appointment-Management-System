@@ -46,7 +46,7 @@ void updateHistory(struct emp *h, char id[], char reason[]) {
     }
 }
 
-struct emp *changeConsultNum(int n, char id[], struct emp *h) {
+void changeConsultNum(int n, char id[], struct emp *h) {
     struct emp *p;
     p = findEmp(h, id);
     if (p != NULL) {
@@ -56,7 +56,7 @@ struct emp *changeConsultNum(int n, char id[], struct emp *h) {
     }
 }
 
-struct emp *changeLastConsult(char lastConsult[], char id[], struct emp *h) {
+void changeLastConsult(char lastConsult[], char id[], struct emp *h) {
     struct emp *p;
     p = findEmp(h, id);
     if (p != NULL) {
@@ -67,7 +67,7 @@ struct emp *changeLastConsult(char lastConsult[], char id[], struct emp *h) {
     }
 }
 
-struct emp *changeReturnWork(char returnWork[], char id[], struct emp *h) {
+void changeReturnWork(char returnWork[], char id[], struct emp *h) {
     struct emp *p;
     p = findEmp(h, id);
     if (p != NULL) {
@@ -115,13 +115,13 @@ void updateEmp(struct emp *h, char id[]) {
                 strcpy(p->name, newName);
                 break;
             case 3:
-                while (1) { //infinite loop that we will exit using break
+                while (1) {
                     printf(" Enter new consult number: ");
                     if (scanf("%d", &newConsult) == 1) {
                         break;
                     } else {
-                        printf(" You need to enter a number please.\n");   //loop till they enter an integer
-                        while (getchar() != '\n');   //clear buffer to not mess up next scanf
+                        printf(" You need to enter a number please.\n");
+                        while (getchar() != '\n');
                     }
                 }
                 changeConsultNum(newConsult, id, h);
@@ -137,6 +137,7 @@ void updateEmp(struct emp *h, char id[]) {
                 changeReturnWork(newDate, id, h);
                 break;
             case 6:
+                getchar();
                 printf(" Enter new medical reason: ");
                 fgets(newReason, sizeof(newReason), stdin);
                 newReason[strcspn(newReason, "\n")] = '\0';
@@ -176,7 +177,6 @@ void deleteEmp(struct emp **h, char deleted_id[]) {
 struct emp* addEmp(struct emp *h) {
     struct emp *p = (struct emp*)malloc(sizeof(struct emp));
     char choice;
-    p->adr = NULL;
     memset(p, 0, sizeof(struct emp));
 
     printf(" Enter Id: ");
@@ -188,16 +188,17 @@ struct emp* addEmp(struct emp *h) {
     p->name[strcspn(p->name, "\n")] = '\0';
 
     int num;
-    while (1) { //infite loop that we're gonna exit using break
+    while (1) {
         printf(" Enter consult number: ");
         if (scanf("%d", &num) == 1) {
+            p->consult_num = num;
             break;
         } else {
-            printf(" You need to enter a number please.\n");   //make sure we read an int
-            while (getchar() != '\n'); //clear the buffer so we don't mess up future scanf
+            printf(" You need to enter a number please.\n");
+            while (getchar() != '\n');
+        }
     }
-    p->consult_num = num;
-    }
+
     printf(" Enter last consultation date: ");
     scanf("%10s", p->last_consult);
 
@@ -327,9 +328,6 @@ int main() {
     FILE *f = fopen("C:\\Users\\daass\\OneDrive\\Documents\\tp2\\EmpRecords.txt", "r");
     struct emp *h = loadEmp(f);
     fclose(f);
-    // h = addEmp(h);
-    char id[] = "12345678";
-    updateEmp(h, id);
     printInGrp(h);
     return 0;
 }
