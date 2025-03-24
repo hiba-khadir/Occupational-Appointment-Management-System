@@ -174,6 +174,31 @@ void deleteEmp(struct emp **h, char deleted_id[]) {
     }
 }
 
+void addNewEmp(consultation *q, struct emp **h) {
+    struct emp *p = (struct emp*)malloc(sizeof(struct emp));
+    memset(p, 0, sizeof(struct emp));
+
+    strncpy(p->id, q->Employee_ID, sizeof(p->id) - 1);
+    p->id[sizeof(p->id) - 1] = '\0';
+
+    strncpy(p->name, q->Employee_Name, sizeof(p->name) - 1);
+    p->name[sizeof(p->name) - 1] = '\0';
+
+    p->consult_num = 1;
+
+    strncpy(p->history[0], q->Consultation_Reason, sizeof(p->history[0]) - 1);
+    p->history[0][sizeof(p->history[0]) - 1] = '\0';
+
+    if (*h == NULL) {
+        *h = p;
+    } else {
+        struct emp *ptr = *h;
+        while (ptr->adr != NULL) ptr = ptr->adr;
+        ptr->adr = p;
+    }
+}
+
+
 struct emp* addEmp(struct emp *h) {
     struct emp *p = (struct emp*)malloc(sizeof(struct emp));
     char choice;
