@@ -384,7 +384,7 @@ void subAutoUpdate(struct emp *h, char id[], char reason[], char date[]) {
     changeLastConsult(date, id, h);
 }
 
-void automaticUpdate(struct emp **h, typeQueue *q, char[] date) {
+void automaticUpdate(struct emp **h, typeQueue *q, char date[]) {
     struct emp *p;
     typeCell *c = q->h;
 
