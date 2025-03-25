@@ -384,10 +384,9 @@ void subAutoUpdate(struct emp *h, char id[], char reason[], char date[]) {
     changeLastConsult(date, id, h);
 }
 
-void automaticUpdate(struct emp **h, typeQueue *q) {
+void automaticUpdate(struct emp **h, typeQueue *q, char[] date) {
     struct emp *p;
     typeCell *c = q->h;
-    char date[15] = "2025-03-26";
 
     while (c != NULL) {
         p = findEmp(*h, c->conslt.Employee_ID);
