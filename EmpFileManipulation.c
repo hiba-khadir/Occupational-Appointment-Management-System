@@ -174,29 +174,6 @@ void deleteEmp(struct emp **h, char deleted_id[]) {
     }
 }
 
-/*void addNewEmp(consultation *q, struct emp **h) {
-    struct emp *p = (struct emp*)malloc(sizeof(struct emp));
-    memset(p, 0, sizeof(struct emp));
-
-    strncpy(p->id, q->Employee_ID, sizeof(p->id) - 1);
-    p->id[sizeof(p->id) - 1] = '\0';
-
-    strncpy(p->name, q->Employee_Name, sizeof(p->name) - 1);
-    p->name[sizeof(p->name) - 1] = '\0';
-
-    p->consult_num = 1;
-
-    strncpy(p->history[0], q->Consultation_Reason, sizeof(p->history[0]) - 1);
-    p->history[0][sizeof(p->history[0]) - 1] = '\0';
-
-    if (*h == NULL) {
-        *h = p;
-    } else {
-        struct emp *ptr = *h;
-        while (ptr->adr != NULL) ptr = ptr->adr;
-        ptr->adr = p;
-    }
-}*/
 
 
 struct emp* addEmp(struct emp *h) {
@@ -375,6 +352,56 @@ void saveEmp(struct emp *h, FILE *f) {
         p = p->adr;
     }
 }
+
+void addNewEmp(consultation *q, struct emp **h) {
+    struct emp *p = (struct emp*)malloc(sizeof(struct emp));
+    memset(p, 0, sizeof(struct emp));
+
+    strncpy(p->id, q->Employee_ID, sizeof(p->id) - 1);
+    p->id[sizeof(p->id) - 1] = '\0';
+
+    strncpy(p->name, q->Employee_Name, sizeof(p->name) - 1);
+    p->name[sizeof(p->name) - 1] = '\0';
+
+    p->consult_num = 1;
+
+    strncpy(p->history[0], q->Consultation_Reason, sizeof(p->history[0]) - 1);
+    p->history[0][sizeof(p->history[0]) - 1] = '\0';
+
+    if (*h == NULL) {
+        *h = p;
+    } else {
+        struct emp *ptr = *h;
+        while (ptr->adr != NULL) ptr = ptr->adr;
+        ptr->adr = p;
+    }
+}
+
+
+void subAutoUpdate(struct emp *h, char id[], char reason[], char date[]) {
+    updateHistory(h, id, reason);
+    changeConsultNum(findEmp(h, id)->consult_num + 1, id, h);
+    changeLastConsult(date, id, h);
+}
+
+void automaticUpdate(struct emp **h, typeQueue *q) {
+    struct emp *p;
+    typeCell *c = q->h;
+    char date[15] = "2025-03-26";
+
+    while (c != NULL) {
+        p = findEmp(*h, c->conslt.Employee_ID);
+
+        if (p == NULL) {
+            addNewEmp(&(c->conslt), h);
+        } else {
+            subAutoUpdate(*h, c->conslt.Employee_ID, c->conslt.Consultation_Reason, date);
+        }
+
+        c = c->addr;
+    }
+}
+
 
 
 int main() {
