@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "queue_ops.h"
 
 
@@ -51,6 +52,21 @@ typedef struct typeQueue typeQueue ;       /*define queue as a type */
 //global variables 
 int processed_count = 0 ;        //to keep track of the number of appointments processed during the day  
 int maximum ;                    //maximum number of appointments per day (to allow the user to modify it )
+
+
+
+//temp 
+
+struct emp {
+    char id[9];
+    int consult_num;
+    char last_consult[11];
+    char return_work[11];
+    char name[35];
+    char history[5][25];
+    struct emp *adr;
+};
+typedef struct emp emp ;
  
 /*---------------------------------------------------------------------------------*/
 
@@ -203,10 +219,10 @@ void read_file_to_queue(FILE *file,typeQueue *Q){
     while (fgets(line,sizeof(line),file) != NULL)         /*fgets not NULL -stops at the EOF*/
         {
             
-            if (fields = sscanf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]\n",temp.Employee_ID,temp.Employee_Name,temp.Consultation_Time,temp.Consultation_Reason ) == 4 )  /*ensure reading 4 fields*/
-            { 
-                enqueue(Q,temp); /*add to priority queue*/
-                
+            fields = sscanf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]\n",temp.Employee_ID,temp.Employee_Name,temp.Consultation_Time,temp.Consultation_Reason );
+            if (fields == 4 )  /*ensure reading 4 fields*/
+            {
+               enqueue(Q,temp); /*add to priority queue*/
             }
 
            else
@@ -258,6 +274,33 @@ int time_int(char* str_time) {
 
     return (hour * 100 + min);
 }
+
+
+
+
+//gets the current date from the system and converts it into a string DD/MM/YYYY
+char* get_date(int *day ,int *month , int *year){
+
+    static char str_date[11];
+    
+    time_t current_time  ;   //pointer to time since 1970
+    current_time = time(NULL);
+
+    struct tm date = *localtime(&current_time);
+
+
+    *day = date.tm_mday ;
+    *month = date.tm_mon + 1 ;
+    *year = date.tm_year + 1900 ;
+
+    sprintf(str_date,"%d/%d/%d",*day,*month,*year);
+
+    return str_date;
+
+}
+
+
+
 
 
 //free Queue
@@ -543,6 +586,63 @@ void reschedule(typeQueue *Q,typeQueue *Next_day_Q,consultation c){
     }
 }
 
+
+
+
+void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_date){
+
+    //variables
+    char date_buffer[11];
+    int d,m,y ,current_d , current_m , current_y;
+    emp *p;
+    consultation temp ;
+
+    //traverse the list to find periodics and return to work
+    while (p!=NULL)
+    {
+        
+
+        if (strcmp(p->return_work,current_date) == 0) //compare the return to work date with the current date
+        {
+            //initialize the appointment info
+            strcpy(temp.Consultation_Reason,"Return-to-Work");
+            strcpy(temp.Employee_ID,p->id);
+            strcpy(temp.Employee_Name,p->name);
+            assign_time(Next_day_Q,temp);
+
+            //schedule it for the next day 
+            enqueue(Next_day_Q,temp);
+        }
+        
+        strcpy(date_buffer,p->last_consult);
+        sscanf(date_buffer,"%d/%d/%d",&d,&m,&y); //parse the date string and get int values
+        sscanf(current_date,"%d/%d/%d",&current_d,&current_m,&current_y);
+
+
+
+        if (d == current_d && m == current_m && y == current_y - 1)
+        {
+            strcpy(temp.Consultation_Reason,"Periodic");
+            strcpy(temp.Employee_ID,p->id);
+            strcpy(temp.Employee_Name,p->name);
+            assign_time(Next_day_Q,temp);
+
+            //schedule it for the next day 
+            enqueue(Next_day_Q,temp);
+        }
+        
+
+
+        p = p->adr ;
+    }
+    
+
+
+
+
+
+}
+
 //closes an appointment and update the corresponding employee record
 void close_appointment(typeQueue *Q){
 
@@ -571,12 +671,6 @@ void close_appointment(typeQueue *Q){
 }
 
 /*---------------------------------------------------------------------------------------------------------------*/
-
-
-
-
-
-
 
 
 /*-----------------------------------The Queue Model Implementation ------------------------------*/

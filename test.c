@@ -241,8 +241,8 @@ void read_file_to_queue(FILE *file,typeQueue *Q){
 
     while (fgets(line,sizeof(line),file) != NULL)         /*fgets not NULL -stops at the EOF*/
         {
-            
-            if (fields = sscanf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]\n",temp.Employee_ID,temp.Employee_Name,temp.Consultation_Time,temp.Consultation_Reason ) == 4 )  /*ensure reading 4 fields*/
+            fields = sscanf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]\n",temp.Employee_ID,temp.Employee_Name,temp.Consultation_Time,temp.Consultation_Reason );
+            if (fields == 4 )  /*ensure reading 4 fields*/
             {
                enqueue(Q,temp); /*add to priority queue*/
             }
@@ -392,6 +392,26 @@ void reschedule(typeQueue *Q,typeQueue *Next_day_Q,consultation c){
 
 }
 
+char* get_date(int *day ,int *month , int *year){
+
+    static char str_date[11];
+    
+    time_t current_time  ;   //pointer to time since 1970
+    current_time = time(NULL);
+
+    struct tm date = *localtime(&current_time);
+
+
+    *day = date.tm_mday ;
+    *month = date.tm_mon + 1 ;
+    *year = date.tm_year + 1900 ;
+
+    sprintf(str_date,"%d/%d/%d",*day,*month,*year);
+
+    return str_date;
+
+}
+
 void add_appointment(typeQueue *Q , typeQueue *Next_day_Q){
     
     consultation temp ;  /*store data temporarly */
@@ -503,6 +523,7 @@ void free_Q(typeQueue *Q){
 
 
 int main(){
+    /*
     typeQueue queue = createQueue();
     typeQueue Next_Queue = createQueue();  //to handle > max appointment
 
@@ -539,8 +560,10 @@ int main(){
 
    
         
-    }
+    }*/
 
+    int d,m,y ;
+    printf("%s",get_date(&d,&m,&y));
     
 
 
@@ -552,6 +575,6 @@ int main(){
 
 
 
-    fclose(cons_file);
+    //fclose(cons_file);
     return 0 ;
 }
