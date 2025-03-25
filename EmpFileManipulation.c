@@ -174,7 +174,7 @@ void deleteEmp(struct emp **h, char deleted_id[]) {
     }
 }
 
-void addNewEmp(consultation *q, struct emp **h) {
+/*void addNewEmp(consultation *q, struct emp **h) {
     struct emp *p = (struct emp*)malloc(sizeof(struct emp));
     memset(p, 0, sizeof(struct emp));
 
@@ -196,7 +196,7 @@ void addNewEmp(consultation *q, struct emp **h) {
         while (ptr->adr != NULL) ptr = ptr->adr;
         ptr->adr = p;
     }
-}
+}*/
 
 
 struct emp* addEmp(struct emp *h) {
@@ -272,9 +272,6 @@ void readLine(struct emp *p, char *line) {
     sscanf(line + i, "%[^;]", p->id);
     i = i + strlen(p->id) + 1;
 
-    sscanf(line + i, "%[^;]", p->name);
-    i = i + strlen(p->name) + 1;
-
     sscanf(line + i, "%[^;]", num);
     p->consult_num = atoi(num);
     i = i + strlen(num) + 1;
@@ -284,6 +281,9 @@ void readLine(struct emp *p, char *line) {
 
     sscanf(line + i, "%[^;]", p->return_work);
     i = i + strlen(p->return_work) + 1;
+
+    sscanf(line + i, "%[^;]", p->name);
+    i = i + strlen(p->name) + 1;
 
     while (k < 5 && line[i] != '\0' && line[i] != '\n') {
         sscanf(line + i, "%[^,\n]", p->history[k]);
@@ -349,10 +349,42 @@ void printInGrp(struct emp *h) {
     }
 }
 
+void saveEmp(struct emp *h, FILE *f) {
+    struct emp *p = h;
+    char line[300];
+    int i, j;
+
+    while (p != NULL) {
+        i = 0;
+        i = i + sprintf(line + i, "%s;", p->id);
+        i = i + sprintf(line + i, "%d;", p->consult_num);
+        i = i + sprintf(line + i, "%s;", p->last_consult);
+        i = i + sprintf(line + i, "%s;", p->return_work);
+        i = i + sprintf(line + i, "%s;", p->name);
+
+        j = 0;
+        while (j < 5 && p->history[j][0] != '\0') {
+            i = i + sprintf(line + i, "%s,", p->history[j]);
+            j = j + 1;
+        }
+
+        line[i - 1] = '\n';
+        line[i] = '\0';
+
+        fputs(line, f);
+        p = p->adr;
+    }
+}
+
+
 int main() {
     FILE *f = fopen("C:\\Users\\daass\\OneDrive\\Documents\\tp2\\EmpRecords.txt", "r");
     struct emp *h = loadEmp(f);
     fclose(f);
+    h = addEmp(h);
     printInGrp(h);
+    f = fopen("C:\\Users\\daass\\OneDrive\\Documents\\tp2\\EmpRecords.txt", "w");
+    saveEmp(h, f);
+    fclose(f);
     return 0;
 }
