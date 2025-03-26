@@ -235,6 +235,32 @@ void read_file_to_queue(FILE *file,typeQueue *Q){
     }
 
 
+void write_queue_to_file(FILE *file , typeQueue *Q){
+
+    char line[256];
+    typeCell *p = Q->h ;
+    
+    if (!emptyQueue(*Q))
+    {
+        while (p != NULL)
+        {
+            sprintf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]\n",p->conslt.Employee_ID,p->conslt.Employee_Name,p->conslt.Consultation_Time,p->conslt.Consultation_Reason );
+            printf("%s\n",line);
+            fputs(line,file);  //print the line to file 
+
+            p = Next(p);
+        }
+        
+    }
+    else
+    {
+        printf("queue is empty : nothing to write .");
+    }
+    
+    
+    
+}
+
  //clear input buffer
 void clear() 
 {

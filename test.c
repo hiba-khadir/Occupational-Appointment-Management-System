@@ -49,7 +49,7 @@ typedef struct typeQueue typeQueue ;       /*define queue as a type */
 
 //global variables
 int processed_count = 0 ;
-int maximum = 10 ;
+int maximum = 5 ;
 /*---------------------------------------------------------------------------------*/
 
 
@@ -232,6 +232,7 @@ void enqueue(typeQueue *Q , consultation new_conslt){   /*inserts based on prior
     
     
 /*reads data from text file given by a pointer into a queue*/    
+/*reads data from text file given by a pointer into a queue*/      
 void read_file_to_queue(FILE *file,typeQueue *Q){
     
     char line[90];
@@ -519,20 +520,51 @@ void free_Q(typeQueue *Q){
 }
 
 
+void write_queue_to_file(FILE *file , typeQueue Q){
+
+    char line[256];
+    typeCell *p = Q.h ;
+    
+    if (!emptyQueue(Q))
+    {
+        while (p != NULL)
+        {
+            snprintf(line, sizeof(line), "%-8s;%-49s;%-5s;%-20s\n",
+            p->conslt.Employee_ID,
+            p->conslt.Employee_Name,
+            p->conslt.Consultation_Time,
+            p->conslt.Consultation_Reason );
+
+            printf("%s\n",line);
+            fputs(line,file);  //print the line to file 
+
+            p = Next(p);
+        }
+        
+    }
+    else
+    {
+        printf("queue is empty : nothing to write .");
+    }
+    
+    
+    
+}
+
 
 
 
 int main(){
-    /*
+
     typeQueue queue = createQueue();
     typeQueue Next_Queue = createQueue();  //to handle > max appointment
 
     consultation appointement ;
     int i ;
 
-    FILE  *cons_file =  fopen("Consultations.txt","r");  
+    FILE  *cons_file_in =  fopen("Consultations.txt","r");  
 
-    if (cons_file == NULL)
+    if (cons_file_in== NULL)
     {
         printf("Can't open file error!");    
         return 1;    
@@ -540,41 +572,12 @@ int main(){
 
 
     else{
+
         printf("read file to queue  : \n ");
-        read_file_to_queue(cons_file,&queue);
-
-        printf("\nQueue before adding appointment: \n");
+        read_file_to_queue(cons_file_in,&queue);
         display_queue(queue);
-        
-        printf("Queue after : \n");
+        fclose(cons_file_in);
 
-        for (i = 0; i < 6; i++)
-        {
-            printf("add appointment %d \n",i+6);
-            add_appointment(&queue,&Next_Queue);
-        }
-        
-        display_queue(queue);
-        printf("next day's queue : \n");
-        display_queue(Next_Queue);
-
-   
-        
-    }*/
-
-    int d,m,y ;
-    printf("%s",get_date(&d,&m,&y));
-    
-
-
-
-
-
-
-    
-
-
-
-    //fclose(cons_file);
+    }
     return 0 ;
 }
