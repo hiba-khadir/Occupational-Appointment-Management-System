@@ -230,22 +230,30 @@ void enqueue(typeQueue *Q , consultation new_conslt){   /*inserts based on prior
     }
 }
     
-    
-/*reads data from text file given by a pointer into a queue*/    
-/*reads data from text file given by a pointer into a queue*/      
+ 
+/*reads data from text file given by a pointer into a queue*/          
 void read_file_to_queue(FILE *file,typeQueue *Q){
     
     char line[90];
     int fields ;    /*{ID, name , time , reason ..}*/
     consultation temp ;   /*store te retrieved data temporarly*/
+
     
 
     while (fgets(line,sizeof(line),file) != NULL)         /*fgets not NULL -stops at the EOF*/
         {
-            fields = sscanf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]\n",temp.Employee_ID,temp.Employee_Name,temp.Consultation_Time,temp.Consultation_Reason );
+            
+            fields = sscanf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]\n",
+                temp.Employee_ID,
+                temp.Employee_Name,
+                temp.Consultation_Time,
+                temp.Consultation_Reason );
+
             if (fields == 4 )  /*ensure reading 4 fields*/
             {
                enqueue(Q,temp); /*add to priority queue*/
+               printf("consultation reason : %s\n",temp.Consultation_Reason);
+               
             }
 
            else
@@ -524,12 +532,14 @@ void write_queue_to_file(FILE *file , typeQueue Q){
 
     char line[256];
     typeCell *p = Q.h ;
+
+    printf("writing queue to file : \n");
     
     if (!emptyQueue(Q))
     {
         while (p != NULL)
         {
-            snprintf(line, sizeof(line), "%-8s;%-49s;%-5s;%-20s\n",
+            sprintf(line, "%s;%s;%s;%s\n",
             p->conslt.Employee_ID,
             p->conslt.Employee_Name,
             p->conslt.Consultation_Time,
@@ -563,21 +573,38 @@ int main(){
     int i ;
 
     FILE  *cons_file_in =  fopen("Consultations.txt","r");  
-
-    if (cons_file_in== NULL)
+    if (!cons_file_in)
     {
-        printf("Can't open file error!");    
-        return 1;    
+        printf("Error cannot open file \n");
+        return 1 ;
     }
-
-
-    else{
-
-        printf("read file to queue  : \n ");
+    else
+    {
         read_file_to_queue(cons_file_in,&queue);
         display_queue(queue);
-        fclose(cons_file_in);
+        add_appointment(&queue,&Next_Queue);
+        printf("queue:\n");
+        display_queue(queue);
+        printf("next day queue : \n");
+        display_queue(Next_Queue);
 
     }
+    
+    fclose(cons_file_in);
+
+    FILE *cons_file_out = fopen("output.txt","w");
+    if (!cons_file_out)
+    {
+        printf("Error cannot open file \n");
+        return 1 ;
+    }
+    else
+    {
+        write_queue_to_file(cons_file_out,Next_Queue);
+
+    }
+    fclose(cons_file_out);
+    
+
     return 0 ;
 }

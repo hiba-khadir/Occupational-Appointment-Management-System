@@ -232,19 +232,27 @@ void read_file_to_queue(FILE *file,typeQueue *Q){
             }
             
         }
-    }
+}
 
 
-void write_queue_to_file(FILE *file , typeQueue *Q){
+//prints the content of Q into file 
+void write_queue_to_file(FILE *file , typeQueue Q){
 
-    char line[256];
-    typeCell *p = Q->h ;
+    char line[90];
+    typeCell *p = Q.h ;
+
+    printf("writing queue to file : \n");
     
-    if (!emptyQueue(*Q))
+    if (!emptyQueue(Q))
     {
         while (p != NULL)
         {
-            sprintf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]\n",p->conslt.Employee_ID,p->conslt.Employee_Name,p->conslt.Consultation_Time,p->conslt.Consultation_Reason );
+            sprintf(line, "%s;%s;%s;%s\n",
+            p->conslt.Employee_ID,
+            p->conslt.Employee_Name,
+            p->conslt.Consultation_Time,
+            p->conslt.Consultation_Reason );
+
             printf("%s\n",line);
             fputs(line,file);  //print the line to file 
 
@@ -260,6 +268,9 @@ void write_queue_to_file(FILE *file , typeQueue *Q){
     
     
 }
+    
+    
+
 
  //clear input buffer
 void clear() 
@@ -390,7 +401,6 @@ int full_queue_day(typeQueue Q){                     //return 1 if the queue has
 
 
 //returns in p the address of the last element with priority greater or equal than prio , and its previous in q
-
 void access_by_priority(typeQueue Q , int prio , typeCell **p ,typeCell **q){   
 
     //initialization
@@ -407,15 +417,70 @@ void access_by_priority(typeQueue Q , int prio , typeCell **p ,typeCell **q){
     
 }
 
-//assigns to c the the available visit time based on priority and returns the interval of available time 
-/*void assign_time(typeQueue Q , consultation *c ,char **min_time , char **max_time){  
+
+//remember to add checking the current time feature 
+//assigns the available visit time based on priority and returns the interval of available time 
+void assign_time(typeQueue Q , consultation c ,char **min_time , char **max_time){  
 
     //variables
-    typeCell *pred , *succ ;
-    int priority = reason_priority(c->Consultation_Reason);
-    access_by_priority(Q,priority,&pred,&succ);
+    typeCell   *succ , *p;
+    int pred_time , succ_time ,time_slot;
+    int priority = reason_priority(c.Consultation_Reason);
+    int found_time = 0 ;
+
+
+    if (emptyQueue)
+    {
+        strcpy(c.Consultation_Time,"8h30"); //first time slot
+        strcpy(*min_time,"8h30");
+        max_time = NULL ;
+
+    }
+
+    else
+    {
+        access_by_priority(Q,priority,&p,&succ);  //find the position by priority 
+
+
+        
+        if( p != NULL && Next(p) != NULL)
+        {
+            while (!found_time && Next(p) !=NULL)
+            {
+                succ = Next(p);
+            
+                pred_time = time_int(p->conslt.Consultation_Time);
+                succ_time = time_int(succ->conslt.Consultation_Time);
+                time_slot = (pred_time - succ_time)/2;
+            
+                if ( time_slot >= 20) //assume a visit takes 20min
+                {
+                    found_time = 1 ;
+                    strcpy(*min_time,time_string(pred_time + time_slot)); 
+                    strcpy(*max_time,time_string(succ_time - time_slot));
+                }
+                
+
+                p = Next(p);
+            }
+            
+        }
+
+        if (p == NULL || Next(p) == NULL)  //p is the tail or c has the lowest priority
+        {
+            pred_time = time_int(Q.t->conslt.Consultation_Time) ;
+            strcpy(*min_time,time_string(pred_time + 20));
+
+            *max_time = NULL ;
+        }
+        
+        
+        
+        
+    }
+
 }
-*/
+
 
 //--------------------------------------------------------------------------------------------------------
 
@@ -618,7 +683,7 @@ void reschedule(typeQueue *Q,typeQueue *Next_day_Q,consultation c){
 void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_date){
 
     //variables
-    char date_buffer[11];
+    char date_buffer[11] , min_time[6] , max_time[6];
     int d,m,y ,current_d , current_m , current_y;
     emp *p;
     consultation temp ;
@@ -634,7 +699,7 @@ void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_d
             strcpy(temp.Consultation_Reason,"Return-to-Work");
             strcpy(temp.Employee_ID,p->id);
             strcpy(temp.Employee_Name,p->name);
-            assign_time(Next_day_Q,temp);
+            assign_time(*Next_day_Q,temp,&min_time,&max_time);
 
             //schedule it for the next day 
             enqueue(Next_day_Q,temp);
@@ -651,7 +716,7 @@ void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_d
             strcpy(temp.Consultation_Reason,"Periodic");
             strcpy(temp.Employee_ID,p->id);
             strcpy(temp.Employee_Name,p->name);
-            assign_time(Next_day_Q,temp);
+            assign_time(*Next_day_Q,temp,&min_time,&max_time);
 
             //schedule it for the next day 
             enqueue(Next_day_Q,temp);
