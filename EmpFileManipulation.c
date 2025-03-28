@@ -384,23 +384,24 @@ void subAutoUpdate(struct emp *h, char id[], char reason[], char date[]) {
     changeLastConsult(date, id, h);
 }
 
-void automaticUpdate(struct emp **h, typeQueue *q, char date[]) {
-    struct emp *p;
+void updateSingleEmp(struct emp **h, typeQueue *q, char id[], char date[]) {
     typeCell *c = q->h;
 
     while (c != NULL) {
-        p = findEmp(*h, c->conslt.Employee_ID);
+        if (strcmp(c->conslt.Employee_ID, id) == 0) {
+            struct emp *p = findEmp(*h, id);
 
-        if (p == NULL) {
-            addNewEmp(&(c->conslt), h);
-        } else {
-            subAutoUpdate(*h, c->conslt.Employee_ID, c->conslt.Consultation_Reason, date);
+            if (p == NULL) {
+                addNewEmp(&(c->conslt), h);
+            } else {
+                subAutoUpdate(*h, id, c->conslt.Consultation_Reason, date);
+            }
+
+            return; 
         }
-
         c = c->addr;
     }
 }
-
 
 
 int main() {
