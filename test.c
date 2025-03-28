@@ -421,20 +421,116 @@ char* get_date(int *day ,int *month , int *year){
 
 }
 
-void add_appointment(typeQueue *Q , typeQueue *Next_day_Q){
-    
-    consultation temp ;  /*store data temporarly */
 
-    int reason ,valid_choice = 0;
+char* get_time(){
+
+    static char current_time[6];
+
+    time_t int_time = time(NULL); //seconds since 1970
+    struct tm time_tm = *localtime(&int_time);
+
+    sprintf(current_time,"%dh%d",time_tm.tm_hour,time_tm.tm_min);  
+
+    return current_time ;
+}
+
+
+//returns in p the address of the last element with priority greater or equal than prio , and its previous in q
+void access_by_priority(typeQueue Q , int prio , typeCell **p ,typeCell **q){   
+
+    //initialization
+    *p = Q.h ;   
+    *q = NULL;
+
+
+    //move to next until we find a lower priority 
+    while (*p != NULL &&   (prio <= (*p)->priority ))
+    {
+       *q = *p ;                      /* b is the previous of a */
+       *p = Next(*p);        
+    }
+
+    
+}
+
+
+//assigns the available visit time based on priority and returns the interval of available time 
+void assign_time(typeQueue Q , consultation *c ,int *min_time , int *max_time , int current_time){  
+
+    //variables
+    typeCell   *succ , *p;
+    int pred_time , succ_time ,time_slot;
+    int priority = reason_priority(c->Consultation_Reason);
+    int found_time = 0 ;
+
+
+    if (emptyQueue(Q))
+    {
+        printf("The queue is empty \n");
+        strcpy(c->Consultation_Time,"8h30"); //first time slot
+
+        *min_time = 830; //8h30
+        *max_time = 1830; //18h30 
+
+    }
+
+    else
+    {
+
+        access_by_priority(Q,priority,&p,&succ);  //find the position by priority 
+
+        
+        if( p != NULL && Next(p) != NULL)
+        {
+            while (!found_time && Next(p) !=NULL)
+            {
+                succ = Next(p);
+            
+                pred_time = time_int(p->conslt.Consultation_Time);
+                succ_time = time_int(succ->conslt.Consultation_Time);
+                time_slot = (pred_time - succ_time)/2;
+            
+                if ( time_slot >= 20 && current_time < pred_time && current_time >= succ_time + time_slot) //assume a visit takes 20min
+                {
+                    found_time = 1 ;
+                    *min_time = pred_time + time_slot; 
+                    *max_time = succ_time - time_slot;
+                }
+                
+                p = Next(p);
+            }
+            
+        }
+
+        if (Next(p) == NULL)  //p is the tail or c has the lowest priority
+        {
+            pred_time = time_int(Q.t->conslt.Consultation_Time) ;
+            *min_time = pred_time + 20 ;
+            *max_time = 1830 ;  //end of the day 
+        }
+        
+    }
+
+
+}
+
+void add_appointment(typeQueue *Q , typeQueue *Next_day_Q , char* current_time){
+    
+    //variables 
+    consultation temp ;  /*store data temporarly */
+    int valid_choice = 0 , option ,choice;
+    int min_time , max_time ;
 
     printf("---------------New Appointement----------------\n\n");
 
+    //employee's ID
     printf("Employee's ID : ");
     scanf("%s",temp.Employee_ID) ;   
     printf("\n");
     clear();
 
 
+    //employee's name
     printf("Employee's Name : "); 
 
     fgets(temp.Employee_Name, sizeof(temp.Employee_Name), stdin);    // handles the spaces in the name
@@ -442,18 +538,12 @@ void add_appointment(typeQueue *Q , typeQueue *Next_day_Q){
     int len = strlen(temp.Employee_Name);      //lentgh of the name 
 
     if (len > 0 && temp.Employee_Name[len - 1] == '\n') {   //remove trailing new lines
-
         temp.Employee_Name[len - 1] = '\0';
     }
     
-    printf("Consultation Time (ex : 9h20) : ");
-    scanf("%s",temp.Consultation_Time) ;    
-    printf("\n");
-    clear();
 
 
-    //reapeat until a valide coice is entered
-
+    //consultation reason
     do
     {
         
@@ -465,7 +555,7 @@ void add_appointment(typeQueue *Q , typeQueue *Next_day_Q){
 
         
 
-        if (scanf("%d", &reason) != 1)   //if a non integer is entered
+        if (scanf("%d", &option) != 1)   //if a non integer is entered
         {
             printf("Invalid choice : please choose from the above (1 , 2 or 3)\n");
             //reset reason
@@ -475,7 +565,7 @@ void add_appointment(typeQueue *Q , typeQueue *Next_day_Q){
 
         else{
          //assign the reason based on user'a choice 
-        switch (reason)
+        switch (option)
         {
         case 1:
             strcpy(temp.Consultation_Reason,"Work-accident");
@@ -499,9 +589,75 @@ void add_appointment(typeQueue *Q , typeQueue *Next_day_Q){
 
         }        
 
-       
+       clear();
     } while (!(valid_choice));
+
     
+    
+
+    //consultation time
+    do
+    {
+        printf("Consultation Time (ex : 9h20) : \n");
+        printf("choose an option : \n");
+        printf("    1-manual time scheduling \n");
+        printf("    2-automatic time scheduling (show suggestion based on priority) \n"); 
+        
+
+
+        if (scanf("%d", &option) != 1)   //if a non integer is entered
+        {
+            printf("Invalid choice : please choose from the above (1 , 2 or 3)\n");
+            //reset reason
+            clear();
+
+        }
+
+        else
+        {
+            switch (option)
+            {
+            case 1:
+
+                printf("Enter the Consultation Time ( in the format 9h30) : ");
+                scanf("%s",temp.Consultation_Time);
+                valid_choice = 1 ;
+                break;
+
+            case 2:
+
+                assign_time(*Q,&temp,&min_time,&max_time,time_int(current_time));
+                printf("Closest available Consultation Time :   ");
+                printf("From  %s  to  %s \n",time_string(min_time),time_string(max_time));
+
+                printf("to change the time manually press 1 ,else press any key :\n");
+                scanf("%d",&choice);
+
+                switch (choice)
+                {
+                case 1:
+                    printf("Enter the Consultation Time ( in the format 9h30) : ");
+                    scanf("%s",temp.Consultation_Time);
+                    break;
+                
+                default:
+                    break;
+                }
+                
+                valid_choice = 1 ;
+                break;
+
+            default:
+
+                printf("Invalid choice : please choose from the above (1 , 2 or 3)\n");
+                //reset reason
+                clear();
+                break;
+            }
+        }
+        clear();
+
+    } while (!valid_choice);
 
     if (!full_queue_day(*Q))
     {
@@ -564,13 +720,27 @@ void write_queue_to_file(FILE *file , typeQueue Q){
 
 
 
+
 int main(){
 
-    typeQueue queue = createQueue();
+
+    //variables 
+
+    typeQueue queue = createQueue();  //main queue
     typeQueue Next_Queue = createQueue();  //to handle > max appointment
 
     consultation appointement ;
-    int i ;
+    int i ,d ,m ,y ;
+    char 
+    min_time[6] , max_time[6] , 
+    current_time[6] ,
+    current_date[11] ;
+
+    //initialize the time and date
+    strcpy(current_date,get_date(&d,&m,&y)); 
+    strcpy(current_time,get_time());
+
+
 
     FILE  *cons_file_in =  fopen("Consultations.txt","r");  
     if (!cons_file_in)
@@ -582,11 +752,8 @@ int main(){
     {
         read_file_to_queue(cons_file_in,&queue);
         display_queue(queue);
-        add_appointment(&queue,&Next_Queue);
-        printf("queue:\n");
-        display_queue(queue);
-        printf("next day queue : \n");
-        display_queue(Next_Queue);
+        add_appointment(&queue,&Next_Queue,current_time);
+
 
     }
     

@@ -4,75 +4,7 @@
 #include <time.h>
 #include "queue_ops.h"
 
-
-
-
-
-/*---------------------------------TYPE DEFINITIONS------------------------------*/
-
-
-
-/*structure of a linked lists cell will be used  as a queue of consultations inserted based on priority*/
-
-typedef struct consultation consultation ;
- struct consultation
- {
-    char Employee_ID[9];
-    char Employee_Name[50];            
-    char Consultation_Time[6];         /*in the format HH:MM*/
-    char Consultation_Reason[21] ;  
-
-    
- };
-
-
-
-typedef struct cell typeCell;           /*type of an element in the list*/   
-
-struct cell {          
-    consultation conslt;                 
-    typeCell *addr;                      /*address of next*/
-    int priority ;                       /*priority of the appointement*/
-};
-
-
-
-/*dynamic implementation of the queue*/
-
-
-struct typeQueue
-{
-    typeCell *h ;                          /*pointer to the head of the queue*/
-    typeCell *t ;                          /*pointer to the head of the queue*/
-}; 
-typedef struct typeQueue typeQueue ;       /*define queue as a type */
-
-
-
-//global variables 
-int processed_count = 0 ;        //to keep track of the number of appointments processed during the day  
-int maximum ;                    //maximum number of appointments per day (to allow the user to modify it )
-
-
-
-//temp 
-
-struct emp {
-    char id[9];
-    int consult_num;
-    char last_consult[11];
-    char return_work[11];
-    char name[35];
-    char history[5][25];
-    struct emp *adr;
-};
-typedef struct emp emp ;
- 
-/*---------------------------------------------------------------------------------*/
-
-
-
-
+//type definition is in the header file 
 
 
 /*-------------------------the linked lists model implementation for priority queue----------------------------*/
@@ -132,23 +64,6 @@ void display_consultation(typeCell k){
 }
 
 
-/*displays the queue*/
-void display_queue(typeQueue Q){
-    typeCell *p = Q.h ;
-    int cpt = 1 ;
-
-    while (p != NULL)
-    {   
-        printf("\n");
-        printf("appointment %d : \n ", cpt);
-        display_consultation(*p);
-        p = Next(p);
-        cpt++ ;
-    }
-
-
-}
-
 
 /*returns the consultation field inside the list element k*/
 consultation consultation_info(typeCell *k){
@@ -205,7 +120,22 @@ int reason_priority(char reason[21]){
  
 }
 
+/*displays the queue*/
+void display_queue(typeQueue Q){
+    typeCell *p = Q.h ;
+    int cpt = 1 ;
 
+    while (p != NULL)
+    {   
+        printf("\n");
+        printf("appointment %d : \n ", cpt);
+        display_consultation(*p);
+        p = Next(p);
+        cpt++ ;
+    }
+
+
+}
 
 /*reads data from text file given by a pointer into a queue*/      
 void read_file_to_queue(FILE *file,typeQueue *Q){
@@ -279,7 +209,7 @@ void clear()
 }
 
 
-
+/*converts time from int to string */
 char* time_string(int time) {
     static char str_time[6];  
 
@@ -337,6 +267,19 @@ char* get_date(int *day ,int *month , int *year){
 }
 
 
+char* get_time(){
+
+    static char current_time[6];
+
+    time_t int_time = time(NULL); //seconds since 1970
+    struct tm time_tm = *localtime(&int_time);
+
+    sprintf(current_time,"%dh%d",time_tm.tm_hour,time_tm.tm_min);  
+
+    return current_time ;
+}
+
+
 
 
 
@@ -379,7 +322,7 @@ void access_consultation(typeQueue Q ,consultation c, typeCell* *q, typeCell* *p
 }
 
 
-int size_of_queue(typeQueue Q){ //counts the number of appointments in the queue for the day (rescheduled = 0)
+int size_of_queue(typeQueue Q){ //counts the number of appointments in the queue for the day 
 
     int size = 0 ;  //number of appointments 
     typeCell *p = Q.h;  
@@ -420,7 +363,7 @@ void access_by_priority(typeQueue Q , int prio , typeCell **p ,typeCell **q){
 
 //remember to add checking the current time feature 
 //assigns the available visit time based on priority and returns the interval of available time 
-void assign_time(typeQueue Q , consultation c ,char **min_time , char **max_time){  
+void assign_time(typeQueue Q , consultation c ,char **min_time , char **max_time , int current_time){  
 
     //variables
     typeCell   *succ , *p;
@@ -453,7 +396,7 @@ void assign_time(typeQueue Q , consultation c ,char **min_time , char **max_time
                 succ_time = time_int(succ->conslt.Consultation_Time);
                 time_slot = (pred_time - succ_time)/2;
             
-                if ( time_slot >= 20) //assume a visit takes 20min
+                if ( time_slot >= 20 && current_time < pred_time && current_time >= succ_time + time_slot) //assume a visit takes 20min
                 {
                     found_time = 1 ;
                     strcpy(*min_time,time_string(pred_time + time_slot)); 
@@ -617,7 +560,6 @@ void add_appointment(typeQueue *Q , typeQueue *Next_day_Q){
 
 
 //reschedules by moving least priority appointment to next day  
-
 void reschedule(typeQueue *Q,typeQueue *Next_day_Q,consultation c){  
 
     consultation rescheduled  ;
@@ -680,7 +622,7 @@ void reschedule(typeQueue *Q,typeQueue *Next_day_Q,consultation c){
 
 
 
-void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_date){
+void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_date ,int current_time){
 
     //variables
     char date_buffer[11] , min_time[6] , max_time[6];
@@ -699,7 +641,7 @@ void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_d
             strcpy(temp.Consultation_Reason,"Return-to-Work");
             strcpy(temp.Employee_ID,p->id);
             strcpy(temp.Employee_Name,p->name);
-            assign_time(*Next_day_Q,temp,&min_time,&max_time);
+            assign_time(*Next_day_Q,temp,&min_time,&max_time,current_time);
 
             //schedule it for the next day 
             enqueue(Next_day_Q,temp);
@@ -716,7 +658,7 @@ void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_d
             strcpy(temp.Consultation_Reason,"Periodic");
             strcpy(temp.Employee_ID,p->id);
             strcpy(temp.Employee_Name,p->name);
-            assign_time(*Next_day_Q,temp,&min_time,&max_time);
+            assign_time(*Next_day_Q,temp,&min_time,&max_time,current_time);
 
             //schedule it for the next day 
             enqueue(Next_day_Q,temp);
@@ -848,8 +790,14 @@ void dequeue(typeQueue *Q , consultation *dequeued_conslt ){
     if (!emptyQueue(*Q))
     {
         temp =  (*Q).h ;                      /*temporary save for the head*
+
+
          /*copy each field from the head  consultation to the dequeued consultation*/ 
-        *dequeued_conslt = consultation_info(Q->h);
+        strcpy(dequeued_conslt->Consultation_Reason,consultation_info(Q->h).Consultation_Reason); 
+        strcpy(dequeued_conslt->Employee_ID,consultation_info(Q->h).Employee_ID); 
+        strcpy(dequeued_conslt->Employee_Name,consultation_info(Q->h).Employee_Name); 
+        strcpy(dequeued_conslt->Consultation_Time,consultation_info(Q->h).Consultation_Time); 
+        
         Q->h = Next(Q->h);                        /*move head to next */
         free(temp);                               /*free the dequeued element*/
 
