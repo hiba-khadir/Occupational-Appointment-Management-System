@@ -6,7 +6,9 @@
 
 //type definition is in the header file 
 
-
+//initialization 
+int processed_count = 0 ;
+int maximum = 10 ;
 /*-------------------------the linked lists model implementation for priority queue----------------------------*/
 /*same linked list model , the type of the element in the cell is a consultation*/
 
@@ -124,6 +126,16 @@ int reason_priority(char reason[21]){
 void display_queue(typeQueue Q){
     typeCell *p = Q.h ;
     int cpt = 1 ;
+    printf("Hello from display queue \n");
+    if (Q.h != NULL)
+    {
+        printf("the head is : %s \n",p->conslt.Employee_Name);
+    }
+    else
+    {
+        printf("the queue is empty \n");
+    }
+    
 
     while (p != NULL)
     {   
@@ -148,8 +160,8 @@ void read_file_to_queue(FILE *file,typeQueue *Q){
 
     while (fgets(line,sizeof(line),file) != NULL)         /*fgets not NULL -stops at the EOF*/
         {
-            
-            fields = sscanf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]\n",temp.Employee_ID,temp.Employee_Name,temp.Consultation_Time,temp.Consultation_Reason );
+            printf("%s",line);
+            fields = sscanf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]",temp.Employee_ID,temp.Employee_Name,temp.Consultation_Time,temp.Consultation_Reason );
             if (fields == 4 )  /*ensure reading 4 fields*/
             {
                enqueue(Q,temp); /*add to priority queue*/
@@ -298,7 +310,7 @@ void free_Q(typeQueue *Q){
 
 //returns in p and q the address of the cell contationing consultation c  and th eprevious cell respectivly 
 
-void access_consultation(typeQueue Q ,consultation c, typeCell* *q, typeCell* *p){
+void access_consultation(typeQueue Q ,char* ID, typeCell* *q, typeCell* *p){
 
     *q=NULL;                         /*pointer to the previous cell*/
     *p= Q.h;                       /* pointer to the current cell*/
@@ -306,7 +318,7 @@ void access_consultation(typeQueue Q ,consultation c, typeCell* *q, typeCell* *p
 
     while (*p != NULL && found == 0 ){        /*traverse the list*/
 
-        if (strcmp((*p)->conslt.Employee_ID,c.Employee_ID) == 0 )        /*test if the appointement is found*/
+        if (strcmp((*p)->conslt.Employee_ID,ID) == 0 )        /*test if the appointement is found*/
         {
             found = 1;                          /*update the boolean*/
         }
@@ -439,10 +451,10 @@ void assign_time(typeQueue Q , consultation c ,char **min_time , char **max_time
 /* deletes an appointment of the queue given the consultation info */
 //remember to fix this later to delete given only one field (name , id or time )
 
-void cancel_appointment(typeQueue *Q , consultation appointment){
+void cancel_appointment(typeQueue *Q , char* ID){
     typeCell *b, *a ;
 
-    access_consultation(*Q,appointment,&b,&a);
+    access_consultation(*Q,ID,&b,&a);
 
     if (b != NULL)             /*then the value was found and the list is not empty  */
     {  
@@ -621,7 +633,7 @@ void reschedule(typeQueue *Q,typeQueue *Next_day_Q,consultation c){
 
 
 
-
+/*
 void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_date ,int current_time){
 
     //variables
@@ -701,6 +713,63 @@ void close_appointment(typeQueue *Q){
     
     processed_count++ ;
 
+}*/
+
+//reschedules an appointment given its ID from the stdin to next day 
+void reschedule_manual(typeQueue *Q , typeQueue *Next_day_queue){
+
+    char ID[9];
+    typeCell *pred , *rescheduled;
+    consultation temp ;
+    int option ;
+
+    if (!emptyQueue(*Q))    
+    {
+enter_ID:
+        printf("Enter ID of the employee to reschedule his appointment to next day : ");
+        scanf("%s",ID);
+    
+        access_consultation(*Q,ID,&rescheduled,&pred);
+
+        //linking  
+        if (!pred)  //the head is rescheduled
+        {
+            dequeue(Q,&temp);   //dequeue the head 
+            enqueue(Next_day_queue,temp);  //push it to next day queue 
+        
+        }
+        else if (!rescheduled)   //no such ID 
+        {
+            printf("appointment not found : choose an option\n");
+            printf("    1- Retype the ID ( in case of typing mistake ) \n");
+            printf("    2- Add an appointment to Next day  \n");
+
+            scanf("%d",&option);
+
+            switch (option)
+            {
+            case 1:
+                goto enter_ID ;   //ask the user to enter an ID again  
+                break;
+
+            case 2:
+                add_appointment(Next_day_queue,NULL); //add an appointment to the next day 
+                break;
+
+            default:
+                printf("Invalid choice : rechedulement aborted .\n");
+                break;
+            }
+        }   
+        
+        
+    
+    }
+    else //queue is empty
+    {
+        printf("Queue is empty : no appointments to reschedule .\n");
+    }
+    
 }
 
 /*---------------------------------------------------------------------------------------------------------------*/

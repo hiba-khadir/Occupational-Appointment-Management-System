@@ -1,5 +1,5 @@
-#ifndef queue_ops.h
-#define queue_ops.h
+#ifndef QUEUE_OPS_H
+#define QUEUE_OPS_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,9 +50,8 @@ typedef struct typeQueue typeQueue ;       /*define queue as a type */
 
 
 //global variables 
-int processed_count = 0 ;        //to keep track of the number of appointments processed during the day  
-int maximum ;                    //maximum number of appointments per day (to allow the user to modify it )
-int appointment_duration ;
+extern int processed_count ;        //to keep track of the number of appointments processed during the day  
+extern int maximum ;                    //maximum number of appointments per day (to allow the user to modify it )
 
 
 
@@ -103,7 +102,7 @@ int reason_priority(char reason[21]);
 /*displays the queue*/
 void display_queue(typeQueue Q);
 
-/*reads data from text file given by a pointer into a queue*/      
+/*reads data from text file given by a pointer into a queue*/           
 void read_file_to_queue(FILE *file,typeQueue *Q);
 
 //prints the content of Q into file 
@@ -128,7 +127,7 @@ char* get_time();
 void free_Q(typeQueue *Q);
 
 //returns in p and q the address of the cell contationing consultation c  and th eprevious cell respectivly 
-void access_consultation(typeQueue Q ,consultation c, typeCell* *q, typeCell* *p);
+void access_consultation(typeQueue Q , char* ID, typeCell** q, typeCell** p);
 
 //counts the number of appointments in the queue for the day
 int size_of_queue(typeQueue Q);
@@ -146,7 +145,7 @@ void assign_time(typeQueue Q , consultation c ,char **min_time , char **max_time
 /*---------------------------------Queue's functionalities-------------------*/
 
 /* deletes an appointment of the queue given the consultation info */
-void cancel_appointment(typeQueue *Q , consultation appointment);
+void cancel_appointment(typeQueue *Q , char* ID);
 
 //add an appointment from the user's input 
 void add_appointment(typeQueue *Q , typeQueue *Next_day_Q);
@@ -156,11 +155,13 @@ void add_appointment(typeQueue *Q , typeQueue *Next_day_Q);
 void reschedule(typeQueue *Q,typeQueue *Next_day_Q,consultation c);
 
 //automatically schedules return to work appointments and periodic examinations to the next day 
-void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_date ,int current_time);
+//void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_date ,int current_time);
 
 //closes an appointment and update the corresponding employee record
-void close_appointment(typeQueue *Q);
+//void close_appointment(typeQueue *Q);
 
+//reschedules an appointment given its ID from the stdin to next day 
+void reschedule_manual(typeQueue *Q , typeQueue *Next_day_queue);
 
 /*-------------------------------Queue's abstract machine------------------*/
 
