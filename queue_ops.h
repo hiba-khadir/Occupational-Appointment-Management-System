@@ -98,6 +98,9 @@ consultation consultation_info(typeCell *k);
 /*returns the priority of consultation reasons from 1 to 3 . returns -1 for invalid reasons*/
 int reason_priority(char reason[21]);
 
+//clear the screen 
+void clear_screen();
+
 /*displays the queue*/
 void display_queue(typeQueue Q);
 
@@ -113,7 +116,7 @@ void write_queue_to_file(FILE *file , typeQueue Q);
 /*converts time from int to string */
 char* time_string(int time);
 
-/*converts time from a string to an int HHMM format*/
+/*converts time from a string to an int HHMM format , returns -1 if an invalid time is passed*/
 int time_int(char* str_time);
 
 //gets the current date from the system and converts it into a string DD/MM/YYYY
@@ -125,7 +128,7 @@ char* get_time();
 //free Queue
 void free_Q(typeQueue *Q);
 
-//returns in p and q the address of the cell contationing consultation c  and th eprevious cell respectivly 
+//returns in p and q the address of the cell containing the employye_id = ID and the previous cell respectivly 
 void access_consultation(typeQueue Q , char* ID, typeCell** q, typeCell** p);
 
 //counts the number of appointments in the queue for the day
@@ -143,7 +146,7 @@ void assign_time(typeQueue Q , consultation c ,char **min_time , char **max_time
 
 /*---------------------------------Queue's functionalities-------------------*/
 
-/* deletes an appointment of the queue given the consultation info */
+/* deletes an appointment of the queue given the employee iD  */
 void cancel_appointment(typeQueue *Q , char* ID);
 
 //add an appointment from the user's input 
@@ -154,10 +157,10 @@ void add_appointment(typeQueue *Q , typeQueue *Next_day_Q);
 void reschedule(typeQueue *Q,typeQueue *Next_day_Q,consultation c);
 
 //automatically schedules return to work appointments and periodic examinations to the next day 
-//void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_date ,int current_time);
+void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_date ,int current_time);
 
 //closes an appointment and update the corresponding employee record
-//void close_appointment(typeQueue *Q);
+void close_appointment(typeQueue *Q);
 
 //reschedules an appointment given its ID from the stdin to next day 
 void reschedule_manual(typeQueue *Q , typeQueue *Next_day_queue);

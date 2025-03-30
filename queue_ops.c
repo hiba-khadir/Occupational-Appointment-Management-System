@@ -5,10 +5,10 @@
 #include "queue_ops.h"
 
 //type definition is in the header file 
-
 //initialization 
 int processed_count = 0 ;
 int maximum = 10 ;
+
 /*-------------------------the linked lists model implementation for priority queue----------------------------*/
 /*same linked list model , the type of the element in the cell is a consultation*/
 
@@ -18,14 +18,10 @@ void Allocate(typeCell **p){
     *p = malloc(sizeof(typeCell));
 }
 
-
-
 /*gives the address of the next cell after p*/
 typeCell* Next(typeCell *p){
     return p->addr ;
 }
-
-
 
 /*assigns the consultation field into *k an  element of the list */
 void Ass_consultation(typeCell **k , consultation c){
@@ -54,11 +50,7 @@ void display_consultation(typeCell k){
     printf("Consultation Time : %s \n", k.conslt.Consultation_Time);
     printf("Concultation Reason : %s \n" , k.conslt.Consultation_Reason);
     printf("Priority : %d\n",k.priority);
-
-
 }
-
-
 
 /*returns the consultation field inside the list element k*/
 consultation consultation_info(typeCell *k){
@@ -75,19 +67,10 @@ consultation consultation_info(typeCell *k){
 
 /*-----------------------------------------------------------------------------------------------*/
 
-
-
-
-
-
-
 /*-------------------------list and queues functions----------------------------------*/
 
 
 //-------------------------------helper functions --------------------------
-
-
-
 /*returns the priority of consultation reasons from 1 to 3 . returns -1 for invalid reasons*/
 /*note to me : remember to fix this later to manage upper and lower case :) */
 
@@ -114,9 +97,13 @@ int reason_priority(char reason[21]){
     }
  
 }
-
+//clear the screen 
+void clear_screen() {
+    system("cls");
+}
 /*displays the queue*/
 void display_queue(typeQueue Q){
+
     typeCell *p = Q.h ;
     int cpt = 1 ;
 
@@ -126,16 +113,24 @@ void display_queue(typeQueue Q){
     }
     else
     {
-        while (p != NULL)
-        {   
-            printf("\n");
-            printf("        -----------appointment %d :-------- \n ", cpt);
-            display_consultation(*p);
-            p = Next(p);
-            cpt++ ;
+        while (p != NULL) {
+            for (int i = 0; i < 2 && p != NULL; i++) {
+                printf("\n");
+                printf(" -------------------------------- Appointment %d: -------------------------------- \n", cpt);
+                display_consultation(*p);
+                p = Next(p);
+                cpt++;
+            }
+            if (p != NULL) {
+                printf("\nPress any key to show more: \n");
+                clear();
+                getchar(); // Wait for user input
+                clear_screen();
+            }
         }
     }
 }
+
 /*reads data from text file given by a pointer into a queue*/      
 void read_file_to_queue(FILE *file,typeQueue *Q){
     
@@ -168,10 +163,11 @@ void write_queue_to_file(FILE *file , typeQueue Q){
 
     char line[90];
     typeCell *p = Q.h ;
+    int cpt = 0 ;
     
     if (!emptyQueue(Q))
     {
-        while (p != NULL)
+        while (p != NULL && cpt < maximum) //write only within the limit of the day 
         {
             sprintf(line, "%s;%s;%s;%s\n",
             p->conslt.Employee_ID,
@@ -180,9 +176,10 @@ void write_queue_to_file(FILE *file , typeQueue Q){
             p->conslt.Consultation_Reason );
 
             printf("%s\n",line);
-            fputs(line,file);  //print the line to file 
+            fputs(line,file);           //print the line to file 
 
             p = Next(p);
+            cpt++;
         }
         
     }
@@ -190,20 +187,14 @@ void write_queue_to_file(FILE *file , typeQueue Q){
     {
         printf("queue is empty : nothing to write .");
     }
-    
-    
-    
+        
 }
     
-    
-
-
  //clear input buffer
 void clear() 
 {
     while ( getchar() != '\n' );
 }
-
 
 /*converts time from int to string */
 char* time_string(int time) {
@@ -219,9 +210,6 @@ char* time_string(int time) {
     return str_time;
 }
     
-
-
-
 int time_int(char* str_time) {
     int min, hour;
 
@@ -230,15 +218,13 @@ int time_int(char* str_time) {
         return -1;  // Incorrect format
     }
 
-    // validate houra and minutes
+    // validate hours and minutes
     if (hour < 0 || hour > 23 || min < 0 || min > 59) {
         return -1;
     }
 
     return (hour * 100 + min);
 }
-
-
 
 
 //gets the current date from the system and converts it into a string DD/MM/YYYY
@@ -262,7 +248,6 @@ char* get_date(int *day ,int *month , int *year){
 
 }
 
-
 char* get_time(){
 
     static char current_time[6];
@@ -274,10 +259,6 @@ char* get_time(){
 
     return current_time ;
 }
-
-
-
-
 
 //free Queue
 void free_Q(typeQueue *Q){
@@ -291,14 +272,14 @@ void free_Q(typeQueue *Q){
     
 }
 
-
-//returns in p and q the address of the cell contationing consultation c  and th eprevious cell respectivly 
+//returns in p and q the address of the cell containing employee_id = ID  and the previous cell respectivly 
 void access_consultation(typeQueue Q ,char* ID, typeCell* *q, typeCell* *p){
 
     *q=NULL;                         /*pointer to the previous cell*/
     *p= Q.h;                       /* pointer to the current cell*/
     int found = 0 ;                 /*control boolean*/
 
+    printf("ID passed to access_consultation : %s\n",ID);
     while (*p != NULL && found == 0 ){        /*traverse the list*/
 
         if (strcmp((*p)->conslt.Employee_ID,ID) == 0 )        /*test if the appointement is found*/
@@ -311,6 +292,26 @@ void access_consultation(typeQueue Q ,char* ID, typeCell* *q, typeCell* *p){
         }
         
     }
+    if (*p != NULL)
+    {
+        printf("access_consult returned a pointer to : rescheduled %s \n",(*p)->conslt.Employee_ID);
+    }
+    else
+    {
+        printf("rescheduled is null  //empty queue or ID doesn't exist \n ");
+    }
+    
+    if (*q != NULL)
+    {
+        printf("access_consult returned a pointer to : previous %s ",(*q)->conslt.Employee_ID);
+    }
+    else
+    {
+        printf("previous is NULL // empty queue or reschedule the head\n");
+    }
+    
+    
+
 }
 
 int size_of_queue(typeQueue Q){ //counts the number of appointments in the queue for the day 
@@ -333,7 +334,6 @@ int full_queue_day(typeQueue Q){                     //return 1 if the queue has
     return   (size_of_queue(Q) + processed_count >= maximum) ;          //  and 0 else 
     }
 
-
 //returns in p the address of the last element with priority greater or equal than prio , and its previous in q
 void access_by_priority(typeQueue Q , int prio , typeCell **p ,typeCell **q){   
 
@@ -350,9 +350,8 @@ void access_by_priority(typeQueue Q , int prio , typeCell **p ,typeCell **q){
     }
     
 }
+ 
 
-
-//remember to add checking the current time feature 
 //assigns the available visit time based on priority and returns the interval of available time 
 void assign_time(typeQueue Q , consultation c ,char **min_time , char **max_time , int current_time){  
 
@@ -406,36 +405,22 @@ void assign_time(typeQueue Q , consultation c ,char **min_time , char **max_time
             strcpy(*min_time,time_string(pred_time + 20));
 
             *max_time = NULL ;
-        }
-        
-        
-        
-        
+        }           
     }
-
 }
 
 
 //--------------------------------------------------------------------------------------------------------
 
-
-
-
-
 //---------------------------------------QUEUE FUNCTIONALITIES----------------------------------------------
 
-
-
-
-/* deletes an appointment of the queue given the consultation info */
-//remember to fix this later to delete given only one field (name , id or time )
-
+/* deletes an appointment of the queue given the employee iD  */
 void cancel_appointment(typeQueue *Q , char* ID){
     typeCell *b, *a ;
 
-    access_consultation(*Q,ID,&b,&a);
+    access_consultation(*Q,ID,&a,&b);
 
-    if (b != NULL)             /*then the value was found and the list is not empty  */
+    if (b != NULL)             /*the value was found and the list is not empty  */
     {  
          if( a == NULL){       /*the Cell to delete is the head*/
             Q->h = b->addr ;  
@@ -443,7 +428,7 @@ void cancel_appointment(typeQueue *Q , char* ID){
         
         else                  
         {
-            a->addr = b->addr ;  /*link previous to next */
+            Ass_addr(&a,Next(b));   /*link previous to next */
         }
         
         free(b);
@@ -454,47 +439,80 @@ void cancel_appointment(typeQueue *Q , char* ID){
 
 
 //add an appointment from the user's input 
-void add_appointment(typeQueue *Q , typeQueue *Next_day_Q){
+void add_appointment(typeQueue *Q , typeQueue *Next_day_Q ){
     
     consultation temp ;  /*store data temporarly */
-
-    int reason ,valid_choice = 0;
-
-    printf("------------------------------New Appointement-----------------------------\n\n");
-
-    printf("Employee's ID : ");
-    scanf("%s",temp.Employee_ID) ;   
-    printf("\n");
-    clear();
+    int reason ,valid_choice = 0 , option  ,  time ;
 
 
-    printf("Employee's Name : "); 
-
-    fgets(temp.Employee_Name, sizeof(temp.Employee_Name), stdin);    // handles the spaces in the name
-
-    int len = strlen(temp.Employee_Name);      //lentgh of the name 
-
-    if (len > 0 && temp.Employee_Name[len - 1] == '\n') {   //remove trailing new lines
-
-        temp.Employee_Name[len - 1] = '\0';
-    }
-    
-    printf("Consultation Time (ex : 9h20) : ");
-    scanf("%s",temp.Consultation_Time) ;    
-    printf("\n");
-    clear();
-
-
-    //reapeat until a valide coice is entered
-
-    do
+    if (size_of_queue(*Next_day_Q) >= maximum )
     {
+        printf("Unable to add an appointment today: the rescheduling limit has been reached.\n");
+        printf("Do you want to continue ? (appointment with the lowest priority will be discarded)\n");
+        printf("    1- add and discared lowest priority \n");
+        printf("    2- Cancell adding \n");
+        clear();
+        sscanf("%d", &option);
+
+        switch (option)
+        {
+        case 1:
+            goto adding ;
+            break;
         
-        printf("Consultation Reason : \n");
-        printf("    choose one of the following reasons :\n");
-        printf("        1- Work Accident\n");
-        printf("        2- Occupational Disease\n");
-        printf("        3- Pre-employment Visit\n");
+        default:
+            printf("Addition aborted .\n");
+            break;
+        }
+        clear();
+    }
+    else
+    {
+adding:
+        printf("------------------------------New Appointement-----------------------------\n\n");
+        printf("Employee's ID : ");
+        scanf("%s",temp.Employee_ID) ;   
+        printf("\n");
+        clear();
+
+        printf("Employee's Name : "); 
+        fgets(temp.Employee_Name, sizeof(temp.Employee_Name), stdin);    // handles the spaces in the name
+
+        int len = strlen(temp.Employee_Name);      //lentgh of the name 
+
+        if (len > 0 && temp.Employee_Name[len - 1] == '\n') {   //remove new lines
+
+            temp.Employee_Name[len - 1] = '\0';
+        }
+        clear();
+
+        do
+        {
+            printf("Consultation Time (ex : 9h20) : ");
+            printf("\n");
+            scanf("%s",temp.Consultation_Time) ;  
+            time = time_int(temp.Consultation_Time); 
+            
+            if (time > 0 ) //valid time 
+            {
+                valid_choice = 1 ; 
+            }
+             
+            clear();
+
+        } while (!valid_choice);
+        
+
+        valid_choice = 0 ;
+        //reapeat until a valide coice is entered
+        do
+        {
+            
+            printf("Consultation Reason : \n");
+            printf("    choose one of the following reasons :\n");
+            printf("        1- Work Accident\n");
+            printf("        2- Occupational Disease\n");
+            printf("        3- Pre-employment Visit\n");
 
         
 
@@ -544,8 +562,9 @@ void add_appointment(typeQueue *Q , typeQueue *Next_day_Q){
     else{
         reschedule(Q,Next_day_Q,temp);
     }   
- 
-
+     
+    }
+    
 }
 
 
@@ -558,14 +577,13 @@ void reschedule(typeQueue *Q,typeQueue *Next_day_Q,consultation c){
 
     if (emptyQueue(*Q))
     {
-        if (processed_count >= maximum)
+        if (processed_count >= maximum) // max appointments were closed earlier
         {
             enqueue(Next_day_Q,c);
-            
         }
         else
         {
-            printf("no need to reschedule\n");
+            printf("no need to reschedule : \n");
         }
         
 
@@ -612,7 +630,7 @@ void reschedule(typeQueue *Q,typeQueue *Next_day_Q,consultation c){
 
 
 
-/*
+
 void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_date ,int current_time){
 
     //variables
@@ -621,11 +639,12 @@ void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_d
     emp *p;
     consultation temp ;
 
+
+
     //traverse the list to find periodics and return to work
     while (p!=NULL)
     {
         
-
         if (strcmp(p->return_work,current_date) == 0) //compare the return to work date with the current date
         {
             //initialize the appointment info
@@ -636,6 +655,7 @@ void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_d
 
             //schedule it for the next day 
             enqueue(Next_day_Q,temp);
+
         }
         
         strcpy(date_buffer,p->last_consult);
@@ -655,15 +675,8 @@ void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_d
             enqueue(Next_day_Q,temp);
         }
         
-
-
         p = p->adr ;
     }
-    
-
-
-
-
 
 }
 
@@ -692,13 +705,13 @@ void close_appointment(typeQueue *Q){
     
     processed_count++ ;
 
-}*/
+}
 
 //reschedules an appointment given its ID from the stdin to next day 
 void reschedule_manual(typeQueue *Q , typeQueue *Next_day_queue){
 
     char ID[9];
-    typeCell *pred , *rescheduled;
+    typeCell *pred , *rescheduled;  //pred points to the previous of reschedule
     consultation temp ;
     int option ;
 
@@ -708,12 +721,14 @@ void reschedule_manual(typeQueue *Q , typeQueue *Next_day_queue){
 enter_ID:
         printf("Enter ID of the employee to reschedule his appointment to next day : ");
         scanf("%s",ID);
+        printf("\nID : %s\n",ID);
     
-        access_consultation(*Q,ID,&rescheduled,&pred);
+        access_consultation(*Q,ID,&pred,&rescheduled);
 
-        //linking  
+        //linking  ~
         if (!pred)  //the head is rescheduled
         {
+            printf("rescheduling the head : %s   , rescheduled : %s \n",Q->h->conslt.Employee_ID ,rescheduled->conslt.Employee_ID);
             dequeue(Q,&temp);   //dequeue the head 
             enqueue(Next_day_queue,temp);  //push it to next day queue 
         
@@ -743,14 +758,11 @@ enter_ID:
         }
         else  //pred and rescheduled are not null 
         {
+            printf("rescheduling %s \n",rescheduled->conslt.Employee_ID);
             enqueue(Next_day_queue,rescheduled->conslt);
             Ass_addr(&pred,Next(rescheduled));   //link the previous of rescheduled to its next 
             free(rescheduled);
         }
-           
-        
-        
-    
     }
     else //queue is empty
     {
@@ -782,32 +794,25 @@ int emptyQueue(typeQueue Q){
     return (Q.h == NULL) ;       
 }
 
-
-
-
-
 /*inserts based on priority ( the queue is ordered)*/
-
-void enqueue(typeQueue *Q , consultation new_conslt){   /*inserts based on priority ( the queue is ordered)*/
+void enqueue(typeQueue *Q , consultation new_conslt){   
     //variables
     typeCell *new ;
     typeCell *a = Q->h ,*b=NULL ;             /*a and b are used to traverse the queue*/
 
-
     //initialization
     Allocate(&new);
     Ass_addr(&new,NULL);
-    Ass_consultation(&new,new_conslt);
+    Ass_consultation(&new,new_conslt);  
 
-    
     //insertion
     //find isert position
-    access_by_priority(*Q,new->priority,&b,&a);
-
-    
-
+    while (a != NULL &&   (new->priority <= a->priority ))
+    {
+        b = a ;                      /* b is the previous of a */
+        a = Next(a);        
+    }
     //linking 
-
     if (b != NULL)  //insert at the middle or end
     {
         Ass_addr(&b,new);
@@ -819,7 +824,6 @@ void enqueue(typeQueue *Q , consultation new_conslt){   /*inserts based on prior
         }
         
     }
-
     else       // b = NIL
     {
         if (a == NULL)   //the queue was initially empty
@@ -829,16 +833,12 @@ void enqueue(typeQueue *Q , consultation new_conslt){   /*inserts based on prior
             Q->t = new ;  
             
         }
-
         else{        //insert at the head 
             Ass_addr(&new,Q->h);
             Q->h = new ;    //update the head
-
-        }
-        
+        }   
     }
 }
-
 
 //dequeue the highest priority element in the queue and store the information in dequeued_consultation
 void dequeue(typeQueue *Q , consultation *dequeued_conslt ){
@@ -847,8 +847,6 @@ void dequeue(typeQueue *Q , consultation *dequeued_conslt ){
     if (!emptyQueue(*Q))
     {
         temp =  (*Q).h ;                      /*temporary save for the head*
-
-
          /*copy each field from the head  consultation to the dequeued consultation*/ 
         strcpy(dequeued_conslt->Consultation_Reason,consultation_info(Q->h).Consultation_Reason); 
         strcpy(dequeued_conslt->Employee_ID,consultation_info(Q->h).Employee_ID); 
@@ -857,22 +855,9 @@ void dequeue(typeQueue *Q , consultation *dequeued_conslt ){
         
         Q->h = Next(Q->h);                        /*move head to next */
         free(temp);                               /*free the dequeued element*/
-
     }
     else {
         printf("ERROR : QUEUE IS EMPTY. CANNOT DEQUEUE \n");
     }
 
 }
-        
-
-
-
-
-
-
-
-
-
-
-
