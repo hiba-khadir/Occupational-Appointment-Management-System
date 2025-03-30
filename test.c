@@ -26,9 +26,9 @@ int main(){
     }
     else
     {
-        printf("file opened succesfully :\n");
-        free_Q(&queue);
+        read_file_to_queue(cons_file_in,&queue);      
         add_appointment(&queue,&Next_Queue);
+        //reschedule_manual(&queue,&Next_Queue);
         display_queue(queue);
 
     }

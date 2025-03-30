@@ -83,7 +83,6 @@ typeCell* Next(typeCell *p);
 /*assigns the consultation field into *k an  element of the list */
 void Ass_consultation(typeCell **k , consultation c);
 
-
 /*assigns the address field into *k an  element of the list */
 void Ass_addr(typeCell **p , typeCell *q);
 

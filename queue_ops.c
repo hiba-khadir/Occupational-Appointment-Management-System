@@ -40,18 +40,11 @@ void Ass_consultation(typeCell **k , consultation c){
     
 }
 
-
-
-
-
-
 /*assigns the address field into *k an  element of the list */
 void Ass_addr(typeCell **p , typeCell *q){
     (*p)->addr = q ;
 
 }
-
-
 
 /*displays an element of type consultation*/
 void display_consultation(typeCell k){
@@ -60,7 +53,7 @@ void display_consultation(typeCell k){
     printf("Employee's name : %s \n",k.conslt.Employee_Name);
     printf("Consultation Time : %s \n", k.conslt.Consultation_Time);
     printf("Concultation Reason : %s \n" , k.conslt.Consultation_Reason);
-    printf("Priority : %d",k.priority);
+    printf("Priority : %d\n",k.priority);
 
 
 }
@@ -126,29 +119,23 @@ int reason_priority(char reason[21]){
 void display_queue(typeQueue Q){
     typeCell *p = Q.h ;
     int cpt = 1 ;
-    printf("Hello from display queue \n");
-    if (Q.h != NULL)
+
+    if (emptyQueue(Q))
     {
-        printf("the head is : %s \n",p->conslt.Employee_Name);
+        printf("No consultations scheduled : queue is empty \n");
     }
     else
     {
-        printf("the queue is empty \n");
+        while (p != NULL)
+        {   
+            printf("\n");
+            printf("        -----------appointment %d :-------- \n ", cpt);
+            display_consultation(*p);
+            p = Next(p);
+            cpt++ ;
+        }
     }
-    
-
-    while (p != NULL)
-    {   
-        printf("\n");
-        printf("appointment %d : \n ", cpt);
-        display_consultation(*p);
-        p = Next(p);
-        cpt++ ;
-    }
-
-
 }
-
 /*reads data from text file given by a pointer into a queue*/      
 void read_file_to_queue(FILE *file,typeQueue *Q){
     
@@ -160,7 +147,6 @@ void read_file_to_queue(FILE *file,typeQueue *Q){
 
     while (fgets(line,sizeof(line),file) != NULL)         /*fgets not NULL -stops at the EOF*/
         {
-            printf("%s",line);
             fields = sscanf(line,"%8[^;];%49[^;];%5[^;];%20[^\n]",temp.Employee_ID,temp.Employee_Name,temp.Consultation_Time,temp.Consultation_Reason );
             if (fields == 4 )  /*ensure reading 4 fields*/
             {
@@ -182,8 +168,6 @@ void write_queue_to_file(FILE *file , typeQueue Q){
 
     char line[90];
     typeCell *p = Q.h ;
-
-    printf("writing queue to file : \n");
     
     if (!emptyQueue(Q))
     {
@@ -309,7 +293,6 @@ void free_Q(typeQueue *Q){
 
 
 //returns in p and q the address of the cell contationing consultation c  and th eprevious cell respectivly 
-
 void access_consultation(typeQueue Q ,char* ID, typeCell* *q, typeCell* *p){
 
     *q=NULL;                         /*pointer to the previous cell*/
@@ -328,11 +311,7 @@ void access_consultation(typeQueue Q ,char* ID, typeCell* *q, typeCell* *p){
         }
         
     }
-    
-
-
 }
-
 
 int size_of_queue(typeQueue Q){ //counts the number of appointments in the queue for the day 
 
@@ -364,7 +343,7 @@ void access_by_priority(typeQueue Q , int prio , typeCell **p ,typeCell **q){
 
 
     //move to next until we find a lower priority 
-    while (p != NULL &&   (prio <= (*p)->priority ))
+    while (*p != NULL &&   (prio <= (*p)->priority ))
     {
        *q = *p ;                      /* b is the previous of a */
        *p = Next(*p);        
@@ -481,7 +460,7 @@ void add_appointment(typeQueue *Q , typeQueue *Next_day_Q){
 
     int reason ,valid_choice = 0;
 
-    printf("---------------New Appointement----------------\n\n");
+    printf("------------------------------New Appointement-----------------------------\n\n");
 
     printf("Employee's ID : ");
     scanf("%s",temp.Employee_ID) ;   
@@ -559,7 +538,7 @@ void add_appointment(typeQueue *Q , typeQueue *Next_day_Q){
 
     if (!full_queue_day(*Q))
     {
-        enqueue(Q,temp);      // add based on priority 
+        enqueue(Q,temp);          // add based on priority 
     }
     
     else{
@@ -725,6 +704,7 @@ void reschedule_manual(typeQueue *Q , typeQueue *Next_day_queue){
 
     if (!emptyQueue(*Q))    
     {
+
 enter_ID:
         printf("Enter ID of the employee to reschedule his appointment to next day : ");
         scanf("%s",ID);
@@ -760,7 +740,14 @@ enter_ID:
                 printf("Invalid choice : rechedulement aborted .\n");
                 break;
             }
-        }   
+        }
+        else  //pred and rescheduled are not null 
+        {
+            enqueue(Next_day_queue,rescheduled->conslt);
+            Ass_addr(&pred,Next(rescheduled));   //link the previous of rescheduled to its next 
+            free(rescheduled);
+        }
+           
         
         
     
@@ -810,12 +797,13 @@ void enqueue(typeQueue *Q , consultation new_conslt){   /*inserts based on prior
     //initialization
     Allocate(&new);
     Ass_addr(&new,NULL);
-    Ass_consultation(&new,new_conslt);  
+    Ass_consultation(&new,new_conslt);
 
     
     //insertion
     //find isert position
     access_by_priority(*Q,new->priority,&b,&a);
+
     
 
     //linking 
