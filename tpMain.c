@@ -1232,7 +1232,7 @@ int main() {
     }
 
     // Load next day's appointments
-    nextDayFile = fopen("C:\\Users\\daass\\OneDrive\\Documents\\tp2\\nextcons.txt", "r");
+    nextDayFile = fopen("nextcons.txt", "r");
     if (nextDayFile != NULL) {
         read_file_to_queue(nextDayFile, &nextDayQueue);
         fclose(nextDayFile);
@@ -1413,7 +1413,7 @@ int main() {
                 }
 
                 // Save next day's appointments
-                nextDayFile = fopen("C:\\Users\\daass\\OneDrive\\Documents\\tp2\\nextcons.txt", "w");
+                nextDayFile = fopen("nextcons.txt", "w");
                 if (nextDayFile != NULL) {
                     write_queue_to_file(nextDayFile, nextDayQueue);
                     fclose(nextDayFile);
