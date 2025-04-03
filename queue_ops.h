@@ -7,7 +7,6 @@
 #include <time.h>
 
 
-
 /*---------------------------------TYPE DEFINITIONS------------------------------*/
 
 
@@ -47,17 +46,7 @@ struct typeQueue
 }; 
 typedef struct typeQueue typeQueue ;       /*define queue as a type */
 
-
-
-//global variables 
-extern int processed_count ;        //to keep track of the number of appointments processed during the day  
-extern int maximum ;                    //maximum number of appointments per day (to allow the user to modify it )
-
-
-
-//temp 
-
-struct emp {
+struct emp {  //type of a cell in the linked list
     char id[9];
     int consult_num;
     char last_consult[11];
@@ -67,6 +56,10 @@ struct emp {
     struct emp *adr;
 };
 typedef struct emp emp ;
+
+//global variables 
+extern int processed_count ;        //to keep track of the number of appointments processed during the day  
+extern int maximum ;                    //maximum number of appointments per day (to allow the user to modify it )
  
 /*-------------------------------------------------------------------------------------------------------------------*/
 
@@ -131,6 +124,9 @@ void free_Q(typeQueue *Q);
 //returns in p and q the address of the cell containing the employye_id = ID and the previous cell respectivly 
 void access_consultation(typeQueue Q , char* ID, typeCell** q, typeCell** p);
 
+//assignes the fields of src to dest
+void Ass_consultation_type(consultation *dest , consultation src);
+
 //counts the number of appointments in the queue for the day
 int size_of_queue(typeQueue Q);
 
@@ -159,8 +155,9 @@ void reschedule(typeQueue *Q,typeQueue *Next_day_Q,consultation c);
 //automatically schedules return to work appointments and periodic examinations to the next day 
 void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_date ,int current_time);
 
-//closes an appointment and update the corresponding employee record
-void close_appointment(typeQueue *Q);
+//closes the highest priority appointment appointment and update the corresponding employee record
+void close_appointment(typeQueue *Q,emp **head);
+
 
 //reschedules an appointment given its ID from the stdin to next day 
 void reschedule_manual(typeQueue *Q , typeQueue *Next_day_queue);

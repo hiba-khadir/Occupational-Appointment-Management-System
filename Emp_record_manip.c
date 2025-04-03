@@ -1,72 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include "queue_ops.h"
+#include "Emp_record_manip.h"
 
 
+/*------------------------------- EMPLOYEE RECORD OPERATIONS -------------------------------*/
+
+struct emp* createEmp() {
+    struct emp *p = (struct emp*)malloc(sizeof(struct emp));
+    if (p == NULL) {
+        printf("Memory allocation failed.\n");
+        exit(1);
+    }
+    p->adr = NULL;
+    memset(p, 0, sizeof(struct emp));
+    return p;
+}
 
 
-
-/*---------------------------------TYPE DEFINITIONS------------------------------*/
-
-
-
-/*structure of a linked lists cell will be used  as a queue of consultations inserted based on priority*/
-
-typedef struct consultation consultation ;
- struct consultation
- {
-    char Employee_ID[9];
-    char Employee_Name[50];            
-    char Consultation_Time[6];         /*in the format HH:MM*/
-    char Consultation_Reason[21] ;  
-
-    
- };
-
-
-
-typedef struct cell typeCell;           /*type of an element in the list*/   
-
-struct cell {          
-    consultation conslt;                 
-    typeCell *addr;                      /*address of next*/
-    int priority ;                       /*priority of the appointement*/
-};
-
-
-
-/*dynamic implementation of the queue*/
-
-
-struct typeQueue
-{
-    typeCell *h ;                          /*pointer to the head of the queue*/
-    typeCell *t ;                          /*pointer to the head of the queue*/
-}; 
-typedef struct typeQueue typeQueue ;       /*define queue as a type */
-
-
-
-//global variables 
-int processed_count = 0 ;        //to keep track of the number of appointments processed during the day  
-int maximum ;                    //maximum number of appointments per day (to allow the user to modify it )
- 
-
-
-
-
-struct emp {
-    char id[9];
-    int consult_num;
-    char last_consult[11];
-    char return_work[11];
-    char name[35];
-    char history[5][25];
-    struct emp *adr;
-};
-
-struct emp *findEmp(struct emp *h, char id[]) {
-
+struct emp* findEmp(struct emp *h, char id[]) {
     struct emp *p = h;
     while (p != NULL) {
         if (strcmp(p->id, id) == 0) {
@@ -77,29 +31,19 @@ struct emp *findEmp(struct emp *h, char id[]) {
     return NULL;
 }
 
-
-
-
 void updateHistory(struct emp *h, char id[], char reason[]) {
-
     struct emp *p = findEmp(h, id);
-
     if (p == NULL) {
-        printf(" Employee doesn't exist \n");
-    } 
-    else {
+        printf("Employee doesn't exist\n");
+    } else {
         int i = 0;
-
         while (i < 5 && p->history[i][0] != '\0') {
             i++;
         }
         if (i < 5) {
-
             strncpy(p->history[i], reason, sizeof(p->history[i]) - 1);
             p->history[i][sizeof(p->history[i]) - 1] = '\0';
-        } 
-        else {
-
+        } else {
             for (i = 1; i < 5; i++) {
                 strncpy(p->history[i - 1], p->history[i], sizeof(p->history[i - 1]) - 1);
                 p->history[i - 1][sizeof(p->history[i - 1]) - 1] = '\0';
@@ -110,19 +54,15 @@ void updateHistory(struct emp *h, char id[], char reason[]) {
     }
 }
 
-
-
 void changeConsultNum(int n, char id[], struct emp *h) {
     struct emp *p;
     p = findEmp(h, id);
     if (p != NULL) {
         p->consult_num = n;
     } else {
-        printf(" Employee doesn't exist \n");
+        printf("Employee doesn't exist\n");
     }
 }
-
-
 
 void changeLastConsult(char lastConsult[], char id[], struct emp *h) {
     struct emp *p;
@@ -134,9 +74,6 @@ void changeLastConsult(char lastConsult[], char id[], struct emp *h) {
         printf(" Employee doesn't exist \n");
     }
 }
-
-
-
 
 void changeReturnWork(char returnWork[], char id[], struct emp *h) {
     struct emp *p;
@@ -191,15 +128,13 @@ void updateEmp(struct emp *h, char id[]) {
                     if (scanf("%d", &newConsult) == 1) {
                         break;
                     } else {
-                        printf( "enter a number please.\n");
+                        printf(" You need to enter a number please.\n");
                         while (getchar() != '\n');
                     }
                 }
-
                 changeConsultNum(newConsult, id, h);
                 break;
             case 4:
-
                 printf(" Enter new last consult date: ");
                 scanf("%10s", newDate);
                 changeLastConsult(newDate, id, h);
@@ -222,9 +157,6 @@ void updateEmp(struct emp *h, char id[]) {
         }
     }
 }
-
-
-
 
 void deleteEmp(struct emp **h, char deleted_id[]) {
     struct emp *p = *h;
@@ -253,10 +185,8 @@ void deleteEmp(struct emp **h, char deleted_id[]) {
 
 
 struct emp* addEmp(struct emp *h) {
-
-    struct emp *p = (struct emp*) malloc(sizeof(struct emp));
+    struct emp *p = (struct emp*)malloc(sizeof(struct emp));
     char choice;
-
     memset(p, 0, sizeof(struct emp));
 
     printf(" Enter Id: ");
@@ -264,7 +194,6 @@ struct emp* addEmp(struct emp *h) {
 
     printf(" Enter Name: ");
     getchar();
-
     fgets(p->name, sizeof(p->name), stdin);
     p->name[strcspn(p->name, "\n")] = '\0';
 
@@ -285,7 +214,6 @@ struct emp* addEmp(struct emp *h) {
 
     printf(" does this employee have a return to work date? (y/n): ");
     scanf(" %c", &choice);
-
     if (choice == 'y' || choice == 'Y') {
         printf(" Enter return to work date: ");
         scanf("%10s", p->return_work);
@@ -312,13 +240,6 @@ struct emp* addEmp(struct emp *h) {
         ptr->adr = p;
     }
     return h;
-}
-
-struct emp* createEmp() {
-    struct emp *p = (struct emp*)malloc(sizeof(struct emp));
-    p->adr = NULL;
-    memset(p, 0, sizeof(struct emp));
-    return p;
 }
 
 void readLine(struct emp *p, char *line) {
@@ -356,8 +277,9 @@ void readLine(struct emp *p, char *line) {
         k = k + 1;
     }
 }
+
 struct emp* loadEmp(FILE *f) {
-    struct emp *h = NULL, *p, *tail = NULL; 
+    struct emp *h = NULL, *p, *q;
     char line[255];
 
     while (fgets(line, sizeof(line), f) != NULL) {
@@ -365,18 +287,18 @@ struct emp* loadEmp(FILE *f) {
         readLine(p, line);
         p->adr = NULL;
 
-        if (h == NULL) {   
-            h = p;  
-            tail = p;  
-        } 
-        else {    
-            tail->adr = p;  
-            tail = p;  
+        if (h == NULL) {
+            h = p;
+        } else {
+            q = h;
+            while (q->adr != NULL) {
+                q = q->adr;
+            }
+            q->adr = p;
         }
     }
     return h;
 }
-
 
 void printEmp(struct emp *p) {
     printf(" Id: %s \n Name: %s \n Consults_num: %d\n Last consult date: %s \n Return to work date: %s\n", p->id, p->name, p->consult_num, p->last_consult, p->return_work);
@@ -391,11 +313,8 @@ void printInGrp(struct emp *h) {
     struct emp *p = h;
     int cpt = 0;
     char choice;
-
     printf("<------------------------------------------------------------>\n");
-
     while (p != NULL) {
-
         printEmp(p);
         cpt++;
         p = p->adr;
@@ -412,7 +331,6 @@ void saveEmp(struct emp *h, FILE *f) {
     struct emp *p = h;
     char line[300];
     int i, j;
-
 
     while (p != NULL) {
         i = 0;
@@ -437,9 +355,7 @@ void saveEmp(struct emp *h, FILE *f) {
 }
 
 void addNewEmp(consultation *q, struct emp **h) {
-
     struct emp *p = (struct emp*)malloc(sizeof(struct emp));
-
     memset(p, 0, sizeof(struct emp));
 
     strncpy(p->id, q->Employee_ID, sizeof(p->id) - 1);
@@ -463,25 +379,27 @@ void addNewEmp(consultation *q, struct emp **h) {
 }
 
 
+void subAutoUpdate(struct emp *h, char id[], char reason[], char date[]) {
+    updateHistory(h, id, reason);
+    changeConsultNum(findEmp(h, id)->consult_num + 1, id, h);
+    changeLastConsult(date, id, h);
+}
 
+void updateSingleEmp(struct emp **h, typeQueue *q, char id[], char date[]) {
+    typeCell *c = q->h;
 
-int main() {
+    while (c != NULL) {
+        if (strcmp(c->conslt.Employee_ID, id) == 0) {
+            struct emp *p = findEmp(*h, id);
 
-    FILE *EmpRecord_file = fopen("EmpRecords.txt", "r");
+            if (p == NULL) {
+                addNewEmp(&(c->conslt), h);
+            } else {
+                subAutoUpdate(*h, id, c->conslt.Consultation_Reason, date);
+            }
 
-    if (EmpRecord_file == NULL)
-    {
-        printf("error cannot open file");
+            return;
+        }
+        c = c->addr;
     }
-    
-    else{
-        struct emp *h = loadEmp(EmpRecord_file);
-
-        h = addEmp(h);
-        printInGrp(h);
-    
-        fclose(EmpRecord_file);
-    }
-   
-    return 0;
 }

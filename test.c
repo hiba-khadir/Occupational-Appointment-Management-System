@@ -7,6 +7,7 @@
 
 
 
+
 int main(){
 
 
@@ -14,6 +15,7 @@ int main(){
 
     typeQueue queue = createQueue();  //main queue
     typeQueue Next_Queue = createQueue();  //to handle > max appointment
+    emp *employee_list ;
 
     consultation appointement ;
 
@@ -29,6 +31,7 @@ int main(){
         read_file_to_queue(cons_file_in,&queue);      
         add_appointment(&queue,&Next_Queue);
         reschedule_manual(&queue,&Next_Queue);
+        close_appointment(&queue,&employee_list);
         display_queue(queue);
 
     }

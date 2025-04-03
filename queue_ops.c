@@ -4,6 +4,7 @@
 #include <time.h>
 #include "queue_ops.h"
 
+
 //type definition is in the header file 
 //initialization 
 int processed_count = 0 ;
@@ -25,8 +26,6 @@ typeCell* Next(typeCell *p){
 
 /*assigns the consultation field into *k an  element of the list */
 void Ass_consultation(typeCell **k , consultation c){
-    int i , j ;         /*to iterate through strings*/
-
     /*copy each field from c consultation to the cell */
     strcpy((*k)->conslt.Consultation_Reason, c.Consultation_Reason);    
     strcpy((*k)->conslt.Employee_Name, c.Employee_Name);
@@ -35,6 +34,16 @@ void Ass_consultation(typeCell **k , consultation c){
     (*k)->priority = reason_priority(c.Consultation_Reason);
     
 }
+//assignes the fields of src to dest
+void Ass_consultation_type(consultation *dest , consultation src){
+    /*copy each field from c consultation to the cell */
+    strcpy(dest->Consultation_Reason, src.Consultation_Reason);    
+    strcpy(dest->Employee_Name, src.Employee_Name);
+    strcpy(dest->Consultation_Time , src.Consultation_Time);
+    strcpy(dest->Employee_ID, src.Employee_ID ) ;
+    
+}
+
 
 /*assigns the address field into *k an  element of the list */
 void Ass_addr(typeCell **p , typeCell *q){
@@ -292,27 +301,26 @@ void access_consultation(typeQueue Q ,char* ID, typeCell* *q, typeCell* *p){
         }
         
     }
-    if (*p != NULL)
-    {
-        printf("access_consult returned a pointer to : rescheduled %s \n",(*p)->conslt.Employee_ID);
-    }
-    else
-    {
-        printf("rescheduled is null  //empty queue or ID doesn't exist \n ");
-    }
-    
-    if (*q != NULL)
-    {
-        printf("access_consult returned a pointer to : previous %s ",(*q)->conslt.Employee_ID);
-    }
-    else
-    {
-        printf("previous is NULL // empty queue or reschedule the head\n");
-    }
-    
-    
-
 }
+//deletes a cell of the queue given a pointer 
+void delete_cell(typeQueue *Q,typeCell *prev , typeCell *deleted_c){
+
+    if (deleted_c != NULL)             /*the value was found and the list is not empty  */
+    {  
+         if( prev == NULL){       /*the Cell to delete is the head*/
+            Q->h = deleted_c->addr ;  
+        } 
+        
+        else                  
+        {
+            Ass_addr(&prev,Next(deleted_c));   /*link previous to next */
+        }
+        
+        free(deleted_c);
+     
+    }
+}
+
 
 int size_of_queue(typeQueue Q){ //counts the number of appointments in the queue for the day 
 
@@ -419,21 +427,8 @@ void cancel_appointment(typeQueue *Q , char* ID){
     typeCell *b, *a ;
 
     access_consultation(*Q,ID,&a,&b);
-
-    if (b != NULL)             /*the value was found and the list is not empty  */
-    {  
-         if( a == NULL){       /*the Cell to delete is the head*/
-            Q->h = b->addr ;  
-        } 
-        
-        else                  
-        {
-            Ass_addr(&a,Next(b));   /*link previous to next */
-        }
-        
-        free(b);
-     
-    }
+    delete_cell(Q,a,b);
+    printf("Appointment Cancelled . \n");
   
 } 
 
@@ -680,27 +675,50 @@ void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_d
 
 }
 
-//closes an appointment and update the corresponding employee record
-void close_appointment(typeQueue *Q){
+//closes an appointment appointment and update the corresponding employee record
+void close_appointment(typeQueue *Q,emp *head){
 
-    char choice ;
+    char choice ,ID[9];
+    int option ;
     consultation temp ;
-    dequeue(Q,&temp);       //remove highest priority element and store it in temp
-    updateHistory(temp.Employee_ID,temp.Consultation_Reason);  //update the history of last 5 visits in EmpRecord
+    typeCell *a ,*b ;
 
+    printf("Choose an option : \n");
+    printf("    1- close current appointment (highest priority appointment)\n");
+    printf("    2- close an appointment by employee ID \n");
+    clear();
+    sscanf("%d",&option);
+
+    switch (option)
+    {
+    case 1:
+        dequeue(Q,&temp);  //remove highest priority appointment 
+        break;
     
+    default:
+        printf("Enter employee ID : \n");
+        scanf("%8s",ID);
+        access_consultation(*Q,ID,&a,&b); //find the consultation to close 
+        Ass_consultation_type(&temp,a->conslt); //store it in temp
+        delete_cell(Q,a,b);  //delete the appointment 
+        
+        break;
+    }
+
+
+    updateHistory(head,temp.Employee_ID,temp.Consultation_Reason);  //update the history of last 5 visits in EmpRecord
+   
     if (strcmp(temp.Consultation_Reason,"Pre-employement") == 0 ) //if it is a pre-employment visit 
     {
-        printf("Do you want to add this employee's record to the system ? ( enter Y for yes )\n ");
+        printf("Do you want to add this employee's record to the system ? ( enter \"Y\" for yes )\n ");
         scanf("%c",&choice);
 
         if (choice == "y" || choice == "Y")
         {
-            addNewEmp(temp) ; //add the new employee to the record 
+            addNewEmp(temp,&head); //add the new employee to the record 
         }
         printf("Appointment closed . \n");
-        
-
+    
     }
     
     processed_count++ ;
