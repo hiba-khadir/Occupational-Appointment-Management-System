@@ -154,6 +154,7 @@ void reschedule(typeQueue *Q,typeQueue *Next_day_Q,consultation c);
 //automatically schedules return to work appointments and periodic examinations to the next day 
 void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_date ,int current_time);
 
+
 //closes the highest priority appointment appointment and update the corresponding employee record
 void close_appointment(typeQueue *Q,emp *head);
 
@@ -177,10 +178,7 @@ void enqueue(typeQueue *Q , consultation new_conslt);
 void dequeue(typeQueue *Q , consultation *dequeued_conslt );
 /*------------------------------------------------------------------------------------------------*/
 
-
-
-
-/*------------------------------------ Employee Record Operations ------------------------------------------*/
+/* Employee Record Operations */
 
 struct emp* createEmp();
 
@@ -215,5 +213,4 @@ void deleteEmp(struct emp **h, char deleted_id[]);
 void subAutoUpdate(struct emp *h, char id[], char reason[], char date[]);
 
 void updateSingleEmp(struct emp **h, typeQueue *q, char id[], char date[]);
-//-----------------------------------------------------------------------------------------------------------
 #endif

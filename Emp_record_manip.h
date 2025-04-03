@@ -5,8 +5,42 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "queue_ops.h"       //queue's operation library 
 
+
+/*---------------------------------TYPE DEFINITIONS------------------------------*/
+
+
+
+/*structure of a linked lists cell will be used  as a queue of consultations inserted based on priority*/
+
+typedef struct consultation consultation ;
+ struct consultation
+ {
+    char Employee_ID[9];
+    char Employee_Name[50];            
+    char Consultation_Time[6];         /*in the format HH:MM*/
+    char Consultation_Reason[21] ;  
+
+    
+ };
+
+typedef struct cell typeCell;           /*type of an element in the list*/   
+
+
+struct cell {          
+    consultation conslt;                 
+    typeCell *addr;                      /*address of next*/
+    int priority ;                       /*priority of the appointement*/
+};
+
+
+/*dynamic implementation of the queue*/
+struct typeQueue
+{
+    typeCell *h ;                          /*pointer to the head of the queue*/
+    typeCell *t ;                          /*pointer to the tail of the queue*/
+}; 
+typedef struct typeQueue typeQueue ;       /*define queue as a type */
 //TYPE DEFINITION 
 
 struct emp {  //type of a cell in the linked list

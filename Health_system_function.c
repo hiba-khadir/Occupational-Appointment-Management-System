@@ -2,13 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "queue_ops.h"
+#include "Health_system_function.h"
 
 
 //type definition is in the header file 
 //initialization 
 int processed_count = 0 ;
-int maximum = 10 ;
+int maximum = 3 ;
+
 
 /*-------------------------the linked lists model implementation for priority queue----------------------------*/
 /*same linked list model , the type of the element in the cell is a consultation*/
@@ -81,7 +82,6 @@ consultation consultation_info(typeCell *k){
 
 //-------------------------------helper functions --------------------------
 /*returns the priority of consultation reasons from 1 to 3 . returns -1 for invalid reasons*/
-/*note to me : remember to fix this later to manage upper and lower case :) */
 
 int reason_priority(char reason[21]){ 
 
@@ -178,6 +178,7 @@ void write_queue_to_file(FILE *file , typeQueue Q){
     {
         while (p != NULL && cpt < maximum) //write only within the limit of the day 
         {
+
             sprintf(line, "%s;%s;%s;%s\n",
             p->conslt.Employee_ID,
             p->conslt.Employee_Name,
@@ -288,7 +289,6 @@ void access_consultation(typeQueue Q ,char* ID, typeCell* *q, typeCell* *p){
     *p= Q.h;                       /* pointer to the current cell*/
     int found = 0 ;                 /*control boolean*/
 
-    printf("ID passed to access_consultation : %s\n",ID);
     while (*p != NULL && found == 0 ){        /*traverse the list*/
 
         if (strcmp((*p)->conslt.Employee_ID,ID) == 0 )        /*test if the appointement is found*/
@@ -302,6 +302,7 @@ void access_consultation(typeQueue Q ,char* ID, typeCell* *q, typeCell* *p){
         
     }
 }
+
 //deletes a cell of the queue given a pointer 
 void delete_cell(typeQueue *Q,typeCell *prev , typeCell *deleted_c){
 
@@ -437,7 +438,7 @@ void cancel_appointment(typeQueue *Q , char* ID){
 void add_appointment(typeQueue *Q , typeQueue *Next_day_Q ){
     
     consultation temp ;  /*store data temporarly */
-    int reason ,valid_choice = 0 , option  ,  time ;
+    int reason ,valid_choice = 0 , valid_time = 0 , option  ,  time ;
 
 
     if (size_of_queue(*Next_day_Q) >= maximum )
@@ -445,9 +446,9 @@ void add_appointment(typeQueue *Q , typeQueue *Next_day_Q ){
         printf("Unable to add an appointment today: the rescheduling limit has been reached.\n");
         printf("Do you want to continue ? (appointment with the lowest priority will be discarded)\n");
         printf("    1- add and discared lowest priority \n");
-        printf("    2- Cancell adding \n");
+        printf("    2- Cancel addition \n");
         clear();
-        sscanf("%d", &option);
+        scanf("%d", &option);
 
         switch (option)
         {
@@ -490,15 +491,19 @@ adding:
             
             if (time > 0 ) //valid time 
             {
-                valid_choice = 1 ; 
+                valid_time = 1 ; 
             }
+            else
+            {
+                printf("Invalid time \n");
+            }
+            
              
             clear();
 
-        } while (!valid_choice);
+        } while (!valid_time);
         
 
-        valid_choice = 0 ;
         //reapeat until a valide coice is entered
         do
         {
@@ -629,12 +634,14 @@ void reschedule(typeQueue *Q,typeQueue *Next_day_Q,consultation c){
 void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_date ,int current_time){
 
     //variables
-    char date_buffer[11] , min_time[6] , max_time[6];
+    char date_buffer[11] , *min_time , *max_time;
     int d,m,y ,current_d , current_m , current_y;
-    emp *p;
+    emp *p = head;
     consultation temp ;
 
-
+    //initialization
+    min_time = malloc(6*sizeof(char));
+    max_time = malloc(6*sizeof(char));
 
     //traverse the list to find periodics and return to work
     while (p!=NULL)
@@ -672,8 +679,11 @@ void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_d
         
         p = p->adr ;
     }
+    free(min_time);
+    free(max_time);
 
 }
+
 
 //closes an appointment appointment and update the corresponding employee record
 void close_appointment(typeQueue *Q,emp *head){
@@ -687,7 +697,7 @@ void close_appointment(typeQueue *Q,emp *head){
     printf("    1- close current appointment (highest priority appointment)\n");
     printf("    2- close an appointment by employee ID \n");
     clear();
-    sscanf("%d",&option);
+    scanf("%d",&option);
 
     switch (option)
     {
@@ -713,7 +723,7 @@ void close_appointment(typeQueue *Q,emp *head){
         printf("Do you want to add this employee's record to the system ? ( enter \"Y\" for yes )\n ");
         scanf("%c",&choice);
 
-        if (choice == "y" || choice == "Y")
+        if (choice == 'y' || choice == 'Y')
         {
             addNewEmp(&temp,&head); //add the new employee to the record 
         }
@@ -724,6 +734,7 @@ void close_appointment(typeQueue *Q,emp *head){
     processed_count++ ;
 
 }
+
 
 //reschedules an appointment given its ID from the stdin to next day 
 void reschedule_manual(typeQueue *Q , typeQueue *Next_day_queue){
@@ -738,12 +749,10 @@ void reschedule_manual(typeQueue *Q , typeQueue *Next_day_queue){
 
 enter_ID:
         printf("Enter ID of the employee to reschedule his appointment to next day : ");
-        scanf("%s",ID);
-        printf("\nID : %s\n",ID);
-    
+        scanf("%8s",ID);    
         access_consultation(*Q,ID,&pred,&rescheduled);
 
-        //linking  ~
+        //linking  
         if (!pred)  //the head is rescheduled
         {
             printf("rescheduling the head : %s   , rescheduled : %s \n",Q->h->conslt.Employee_ID ,rescheduled->conslt.Employee_ID);
@@ -766,7 +775,7 @@ enter_ID:
                 break;
 
             case 2:
-                add_appointment(Next_day_queue,NULL); //add an appointment to the next day 
+                add_appointment(Q,Next_day_queue); //add an appointment to the next day 
                 break;
 
             default:
@@ -1121,18 +1130,19 @@ struct emp* addEmp(struct emp *h) {
 }
 
 void readLine(struct emp *p, char *line) {
+
     int i = 0;
     int k = 0;
     char num[3];
 
-    sscanf(line + i, "%[^;]", p->id);
+    sscanf(line + i, "%8[^;]", p->id);
     i = i + strlen(p->id) + 1;
 
-    sscanf(line + i, "%[^;]", num);
+    sscanf(line + i, "%2[^;]", num);
     p->consult_num = atoi(num);
     i = i + strlen(num) + 1;
 
-    sscanf(line + i, "%[^;]", p->last_consult);
+    sscanf(line + i, "%21[^;]", p->last_consult);
     i = i + strlen(p->last_consult) + 1;
 
     sscanf(line + i, "%[^;]", p->return_work);
@@ -1157,12 +1167,14 @@ void readLine(struct emp *p, char *line) {
 }
 
 struct emp* loadEmp(FILE *f) {
-    struct emp *h = NULL, *p, *q;
+    struct emp *h = NULL , *p, *q;
     char line[255];
 
     while (fgets(line, sizeof(line), f) != NULL) {
+        printf("line : %s\n",line);
         p = createEmp();
         readLine(p, line);
+        printf("fields read : %s ,%s ,%s\n",p->id,p->name,p->last_consult);
         p->adr = NULL;
 
         if (h == NULL) {
@@ -1281,4 +1293,3 @@ void updateSingleEmp(struct emp **h, typeQueue *q, char id[], char date[]) {
         c = c->addr;
     }
 }
-//--------------------------------------------------------------------------------------------------------------------
