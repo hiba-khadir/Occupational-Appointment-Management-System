@@ -815,7 +815,6 @@ void updateEmp(struct emp *h, char id[]) {
         char newId[9];
         char newName[35];
         int newConsult;
-
         printf(" What do you want to update?\n");
         printf(" 1. Id\n");
         printf(" 2. Name\n");
@@ -827,7 +826,6 @@ void updateEmp(struct emp *h, char id[]) {
         printf(" Enter your choice: ");
         scanf("%d", &choice);
         getchar();
-
         switch (choice) {
             case 1:
                 printf(" Enter new id: ");
@@ -863,12 +861,25 @@ void updateEmp(struct emp *h, char id[]) {
                 changeReturnWork(newDate, id, h);
                 break;
             case 6:
-                getchar();
-                printf(" Enter new medical reason: ");
-                fgets(newReason, sizeof(newReason), stdin);
-                newReason[strcspn(newReason, "\n")] = '\0';
-                updateHistory(h, id, newReason);
-                break;
+    {
+        int reason_choice;
+        printf(" Choose new medical reason:\n");
+        printf(" 1. Work-accident\n 2. Occupational-Disease\n 3. Return-to-Work\n 4. Pre-employment\n 5. Periodic\n Choose (1-5): ");
+        scanf("%d", &reason_choice);
+
+        switch (reason_choice) {
+            case 1: strcpy(newReason, "Work-accident"); break;
+            case 2: strcpy(newReason, "Occupational-Disease"); break;
+            case 3: strcpy(newReason, "Return-to-Work"); break;
+            case 4: strcpy(newReason, "Pre-employment"); break;
+            case 5: strcpy(newReason, "Periodic"); break;
+            default:
+                printf(" Invalid choice. Update canceled.\n");
+                return;
+        }
+        updateHistory(h, id, newReason);
+    }
+    break;
             default:
                 printf(" Update canceled due to input error\n");
                 break;
@@ -900,21 +911,16 @@ void deleteEmp(struct emp **h, char deleted_id[]) {
     }
 }
 
-
-
 struct emp* addEmp(struct emp *h) {
     struct emp *p = (struct emp*)malloc(sizeof(struct emp));
     char choice;
     memset(p, 0, sizeof(struct emp));
-
     printf(" Enter Id: ");
     scanf("%8s", p->id);
-
     printf(" Enter Name: ");
     getchar();
     fgets(p->name, sizeof(p->name), stdin);
     p->name[strcspn(p->name, "\n")] = '\0';
-
     int num;
     while (1) {
         printf(" Enter consult number: ");
@@ -926,30 +932,37 @@ struct emp* addEmp(struct emp *h) {
             while (getchar() != '\n');
         }
     }
-
     printf(" Enter last consultation date: ");
     scanf("%10s", p->last_consult);
-
     printf(" does this employee have a return to work date? (y/n): ");
     scanf(" %c", &choice);
     if (choice == 'y' || choice == 'Y') {
         printf(" Enter return to work date: ");
         scanf("%10s", p->return_work);
     }
-
     getchar();
 
     for (int i = 0; i < 5; i++) {
-        printf(" History %d (press enter to stop): ", i + 1);
-        fgets(p->history[i], sizeof(p->history[i]), stdin);
-        p->history[i][strcspn(p->history[i], "\n")] = '\0';
-        if (p->history[i][0] == '\0') {
+        int reason_choice;
+        printf(" History %d (enter 0 to stop):\n", i + 1);
+        printf(" 1. Work-accident\n 2. Occupational-Disease\n 3. Return-to-Work\n 4. Pre-employment\n 5. Periodic\n Choose (1-5): ");
+        if (scanf("%d", &reason_choice) != 1 || reason_choice == 0) {
             for (int j = i; j < 5; j++) p->history[j][0] = '\0';
             break;
         }
-    }
-    printf("<------------------------------------------------------------>\n");
 
+        switch (reason_choice) {
+            case 1: strcpy(p->history[i], "Work-accident"); break;
+            case 2: strcpy(p->history[i], "Occupational-Disease"); break;
+            case 3: strcpy(p->history[i], "Return-to-Work"); break;
+            case 4: strcpy(p->history[i], "Pre-employment"); break;
+            case 5: strcpy(p->history[i], "Periodic"); break;
+            default: p->history[i][0] = '\0'; i--; continue;
+        }
+        getchar();
+    }
+
+    printf("<------------------------------------------------------------>\n");
     if (h == NULL) {
         h = p;
     } else {
@@ -957,6 +970,7 @@ struct emp* addEmp(struct emp *h) {
         while (ptr->adr != NULL) ptr = ptr->adr;
         ptr->adr = p;
     }
+    p->adr = NULL;
     return h;
 }
 
@@ -1076,17 +1090,33 @@ void addNewEmp(consultation *q, struct emp **h) {
     struct emp *p = (struct emp*)malloc(sizeof(struct emp));
     memset(p, 0, sizeof(struct emp));
 
+    // Copy employee ID
     strncpy(p->id, q->Employee_ID, sizeof(p->id) - 1);
     p->id[sizeof(p->id) - 1] = '\0';
 
+    // Copy employee name
     strncpy(p->name, q->Employee_Name, sizeof(p->name) - 1);
     p->name[sizeof(p->name) - 1] = '\0';
 
+    // Set consultation number
     p->consult_num = 1;
 
+    // Copy consultation reason to history
     strncpy(p->history[0], q->Consultation_Reason, sizeof(p->history[0]) - 1);
     p->history[0][sizeof(p->history[0]) - 1] = '\0';
 
+    // Set last consultation date to current date
+    time_t now = time(NULL);
+    struct tm *tm_now = localtime(&now);
+    strftime(p->last_consult, sizeof(p->last_consult), "%d/%m/%Y", tm_now);
+
+    // Initialize return_work as empty
+    p->return_work[0] = '\0';
+
+    // Initialize adr to NULL
+    p->adr = NULL;
+
+    // Add to the list
     if (*h == NULL) {
         *h = p;
     } else {
@@ -1095,7 +1125,6 @@ void addNewEmp(consultation *q, struct emp **h) {
         ptr->adr = p;
     }
 }
-
 
 void subAutoUpdate(struct emp *h, char id[], char reason[], char date[]) {
     updateHistory(h, id, reason);
@@ -1380,7 +1409,7 @@ int main() {
     free_Q(&todayQueue);
     free_Q(&nextDayQueue);
 
-    // Free employee records - we need to traverse the linked list
+    // Free employee records
     emp *current = employeeRecords;
     emp *next;
     while (current != NULL) {
