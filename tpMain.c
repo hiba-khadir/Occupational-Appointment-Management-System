@@ -41,6 +41,7 @@ int maximum = 10;                    //maximum number of appointments per day
 
 /*-------------------------------- FUNCTION PROTOTYPES --------------------------------*/
 /* Utility Functions */
+int unique_ID(emp* head ,char *ID);
 void clear();
 char* time_string(int time);
 int time_int(char* str_time);
@@ -97,6 +98,24 @@ void subAutoUpdate(struct emp *h, char id[], char reason[], char date[]);
 void updateSingleEmp(struct emp **h, typeQueue *q, char id[], char date[]);
 
 /*------------------------------- UTILITY FUNCTIONS -------------------------------*/
+
+// Checks if an ID is unique in the list
+// Returns 1 if unique, 0 if not unique
+int unique_ID(emp* head, char *ID) {
+    emp *p = head; // to traverse the queue
+    int unique = 1; // Assume ID is unique initially
+
+    while (p != NULL && unique) {
+        if (strcmp(p->id, ID) == 0) {
+            unique = 0; // Set to not unique if match found
+        }
+        p = p->adr;
+    }
+
+    return unique;
+}
+
+
 //clear input buffer
 void clear() {
     while (getchar() != '\n');
@@ -914,13 +933,28 @@ void deleteEmp(struct emp **h, char deleted_id[]) {
 struct emp* addEmp(struct emp *h) {
     struct emp *p = (struct emp*)malloc(sizeof(struct emp));
     char choice;
+    char tempID[9];
+
     memset(p, 0, sizeof(struct emp));
-    printf(" Enter Id: ");
-    scanf("%8s", p->id);
+
+    // Get ID and check if it's unique
+    while (1) {
+        printf(" Enter Id: ");
+        scanf("%8s", tempID);
+
+        if (h != NULL && !unique_ID(h, tempID)) {
+            printf(" ID already exists. Please enter a unique ID.\n");
+        } else {
+            strcpy(p->id, tempID);
+            break;
+        }
+    }
+
     printf(" Enter Name: ");
     getchar();
     fgets(p->name, sizeof(p->name), stdin);
     p->name[strcspn(p->name, "\n")] = '\0';
+
     int num;
     while (1) {
         printf(" Enter consult number: ");
@@ -932,16 +966,18 @@ struct emp* addEmp(struct emp *h) {
             while (getchar() != '\n');
         }
     }
+
     printf(" Enter last consultation date: ");
     scanf("%10s", p->last_consult);
+
     printf(" does this employee have a return to work date? (y/n): ");
     scanf(" %c", &choice);
     if (choice == 'y' || choice == 'Y') {
         printf(" Enter return to work date: ");
         scanf("%10s", p->return_work);
     }
-    getchar();
 
+    getchar();
     for (int i = 0; i < 5; i++) {
         int reason_choice;
         printf(" History %d (enter 0 to stop):\n", i + 1);
@@ -950,7 +986,6 @@ struct emp* addEmp(struct emp *h) {
             for (int j = i; j < 5; j++) p->history[j][0] = '\0';
             break;
         }
-
         switch (reason_choice) {
             case 1: strcpy(p->history[i], "Work-accident"); break;
             case 2: strcpy(p->history[i], "Occupational-Disease"); break;
@@ -963,6 +998,7 @@ struct emp* addEmp(struct emp *h) {
     }
 
     printf("<------------------------------------------------------------>\n");
+
     if (h == NULL) {
         h = p;
     } else {
@@ -971,6 +1007,7 @@ struct emp* addEmp(struct emp *h) {
         ptr->adr = p;
     }
     p->adr = NULL;
+
     return h;
 }
 
@@ -1151,8 +1188,6 @@ void updateSingleEmp(struct emp **h, typeQueue *q, char id[], char date[]) {
     }
 }
 
-// Include all functions from your existing file here
-// ...
 
 int main() {
     // Files for saving/loading data
@@ -1177,7 +1212,7 @@ int main() {
     printf("Loading existing data...\n");
 
     // Load employee records
-    employeeFile = fopen("C:\\Users\\daass\\OneDrive\\Documents\\tp2\\EmpRecords.txt", "r");
+    employeeFile = fopen("EmpRecords.txt", "r");
     if (employeeFile != NULL) {
         employeeRecords = loadEmp(employeeFile);
         fclose(employeeFile);
@@ -1187,7 +1222,7 @@ int main() {
     }
 
     // Load today's appointments
-    appointmentFile = fopen("C:\\Users\\daass\\OneDrive\\Documents\\tp2\\cons.txt", "r");
+    appointmentFile = fopen("cons.txt", "r");
     if (appointmentFile != NULL) {
         read_file_to_queue(appointmentFile, &todayQueue);
         fclose(appointmentFile);
@@ -1368,7 +1403,7 @@ int main() {
             case 9:
                 printf("\n===== SAVING DATA AND EXITING =====\n");
                 // Save today's appointments
-                appointmentFile = fopen("C:\\Users\\daass\\OneDrive\\Documents\\tp2\\cons.txt", "w");
+                appointmentFile = fopen("cons.txt", "w");
                 if (appointmentFile != NULL) {
                     write_queue_to_file(appointmentFile, todayQueue);
                     fclose(appointmentFile);
@@ -1388,7 +1423,7 @@ int main() {
                 }
 
                 // Save employee records
-                employeeFile = fopen("C:\\Users\\daass\\OneDrive\\Documents\\tp2\\EmpRecords.txt", "w");
+                employeeFile = fopen("EmpRecords.txt", "w");
                 if (employeeFile != NULL) {
                     saveEmp(employeeRecords, employeeFile);
                     fclose(employeeFile);
