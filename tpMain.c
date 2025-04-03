@@ -746,6 +746,7 @@ enter_ID:
 }
 
 /*------------------------------- EMPLOYEE RECORD OPERATIONS -------------------------------*/
+// creates a new employee structure and initializes it with default values
 struct emp* createEmp() {
     struct emp *p = (struct emp*)malloc(sizeof(struct emp));
     if (p == NULL) {
@@ -757,6 +758,7 @@ struct emp* createEmp() {
     return p;
 }
 
+// searches for an employee by id in the linked list and returns pointer to it or null if not found
 struct emp* findEmp(struct emp *h, char id[]) {
     struct emp *p = h;
     while (p != NULL) {
@@ -768,6 +770,7 @@ struct emp* findEmp(struct emp *h, char id[]) {
     return NULL;
 }
 
+// adds a new reason to an employee's medical history, maintaining only the 5 most recent entries
 void updateHistory(struct emp *h, char id[], char reason[]) {
     struct emp *p = findEmp(h, id);
     if (p == NULL) {
@@ -791,6 +794,7 @@ void updateHistory(struct emp *h, char id[], char reason[]) {
     }
 }
 
+// updates the consultation number for a specific employee
 void changeConsultNum(int n, char id[], struct emp *h) {
     struct emp *p;
     p = findEmp(h, id);
@@ -801,6 +805,7 @@ void changeConsultNum(int n, char id[], struct emp *h) {
     }
 }
 
+// updates the last consultation date for a specific employee
 void changeLastConsult(char lastConsult[], char id[], struct emp *h) {
     struct emp *p;
     p = findEmp(h, id);
@@ -812,6 +817,7 @@ void changeLastConsult(char lastConsult[], char id[], struct emp *h) {
     }
 }
 
+// updates the return to work date for a specific employee
 void changeReturnWork(char returnWork[], char id[], struct emp *h) {
     struct emp *p;
     p = findEmp(h, id);
@@ -823,6 +829,7 @@ void changeReturnWork(char returnWork[], char id[], struct emp *h) {
     }
 }
 
+// allows user to update various fields of an employee record through a menu interface
 void updateEmp(struct emp *h, char id[]) {
     struct emp *p = findEmp(h, id);
     if (p == NULL) {
@@ -906,6 +913,7 @@ void updateEmp(struct emp *h, char id[]) {
     }
 }
 
+// removes an employee from the linked list and frees the associated memory
 void deleteEmp(struct emp **h, char deleted_id[]) {
     struct emp *p = *h;
     struct emp *q;
@@ -930,6 +938,7 @@ void deleteEmp(struct emp **h, char deleted_id[]) {
     }
 }
 
+// adds a new employee to the linked list by collecting user input for all fields
 struct emp* addEmp(struct emp *h) {
     struct emp *p = (struct emp*)malloc(sizeof(struct emp));
     char choice;
@@ -1012,6 +1021,7 @@ struct emp* addEmp(struct emp *h) {
 }
 
 void readLine(struct emp *p, char *line) {
+    // parses a line of text into employee structure fields
     int i = 0;
     int k = 0;
     char num[3];
@@ -1048,6 +1058,7 @@ void readLine(struct emp *p, char *line) {
 }
 
 struct emp* loadEmp(FILE *f) {
+    // loads employee records from file into a linked list
     struct emp *h = NULL, *p, *q;
     char line[255];
 
@@ -1070,6 +1081,7 @@ struct emp* loadEmp(FILE *f) {
 }
 
 void printEmp(struct emp *p) {
+    // displays a single employee record with formatting
     printf(" Id: %s \n Name: %s \n Consults_num: %d\n Last consult date: %s \n Return to work date: %s\n", p->id, p->name, p->consult_num, p->last_consult, p->return_work);
     printf(" Medical History:\n");
     for (int h = 0; h < 5; h++) {
@@ -1079,6 +1091,7 @@ void printEmp(struct emp *p) {
 }
 
 void printInGrp(struct emp *h) {
+    // displays all employee records in groups of two
     struct emp *p = h;
     int cpt = 0;
     char choice;
@@ -1097,6 +1110,7 @@ void printInGrp(struct emp *h) {
 }
 
 void saveEmp(struct emp *h, FILE *f) {
+    // saves all employee records to file
     struct emp *p = h;
     char line[300];
     int i, j;
@@ -1124,36 +1138,29 @@ void saveEmp(struct emp *h, FILE *f) {
 }
 
 void addNewEmp(consultation *q, struct emp **h) {
+    // creates and adds a new employee record from consultation data
     struct emp *p = (struct emp*)malloc(sizeof(struct emp));
     memset(p, 0, sizeof(struct emp));
 
-    // Copy employee ID
     strncpy(p->id, q->Employee_ID, sizeof(p->id) - 1);
     p->id[sizeof(p->id) - 1] = '\0';
 
-    // Copy employee name
     strncpy(p->name, q->Employee_Name, sizeof(p->name) - 1);
     p->name[sizeof(p->name) - 1] = '\0';
 
-    // Set consultation number
     p->consult_num = 1;
 
-    // Copy consultation reason to history
     strncpy(p->history[0], q->Consultation_Reason, sizeof(p->history[0]) - 1);
     p->history[0][sizeof(p->history[0]) - 1] = '\0';
 
-    // Set last consultation date to current date
     time_t now = time(NULL);
     struct tm *tm_now = localtime(&now);
     strftime(p->last_consult, sizeof(p->last_consult), "%d/%m/%Y", tm_now);
 
-    // Initialize return_work as empty
     p->return_work[0] = '\0';
 
-    // Initialize adr to NULL
     p->adr = NULL;
 
-    // Add to the list
     if (*h == NULL) {
         *h = p;
     } else {
@@ -1164,12 +1171,14 @@ void addNewEmp(consultation *q, struct emp **h) {
 }
 
 void subAutoUpdate(struct emp *h, char id[], char reason[], char date[]) {
+    // updates history, consult number and last consult date
     updateHistory(h, id, reason);
     changeConsultNum(findEmp(h, id)->consult_num + 1, id, h);
     changeLastConsult(date, id, h);
 }
 
 void updateSingleEmp(struct emp **h, typeQueue *q, char id[], char date[]) {
+    // updates or adds employee record based on queue data
     typeCell *c = q->h;
 
     while (c != NULL) {
@@ -1187,7 +1196,6 @@ void updateSingleEmp(struct emp **h, typeQueue *q, char id[], char date[]) {
         c = c->addr;
     }
 }
-
 
 int main() {
     system("cls"); // Clear screen at start
