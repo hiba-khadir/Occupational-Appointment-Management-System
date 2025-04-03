@@ -1,26 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h> 
-#include "queue_ops.h"
+#include <time.h>
+#include "Health_system_function.h"
 
 
 
 
 
-int main(){
+int test(){
 
-
-    //variables 
+    //variables
 
     typeQueue queue = createQueue();  //main queue
     typeQueue Next_Queue = createQueue();  //to handle > max appointment
     emp *employee_list ;
+    char ID[9];
 
     consultation appointement ;
 
 
-    FILE  *cons_file_in =  fopen("Consultations.txt","r");  
+    FILE  *cons_file_in =  fopen("Consultations.txt","r");
     if (!cons_file_in)
     {
         printf("Error cannot open file \n");
@@ -28,14 +28,15 @@ int main(){
     }
     else
     {
-        read_file_to_queue(cons_file_in,&queue);      
+        read_file_to_queue(cons_file_in,&queue);
         add_appointment(&queue,&Next_Queue);
-        reschedule_manual(&queue,&Next_Queue);
-        close_appointment(&queue,&employee_list);
+        printf("Enter the ID to cancel :");
+        scanf("%8s",ID);
+        cancel_appointment(&queue,ID);
         display_queue(queue);
 
     }
-    
+
     fclose(cons_file_in);
 
     FILE *cons_file_out = fopen("output.txt","w");
@@ -50,7 +51,7 @@ int main(){
 
     }
     fclose(cons_file_out);
-    
+
 
     return 0 ;
 }
