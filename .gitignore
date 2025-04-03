@@ -1,0 +1,7 @@
+*.exe
+*.txt
+.vscode
+*.cbp
+*.depend
+*.layout
+TP_ALSDD
