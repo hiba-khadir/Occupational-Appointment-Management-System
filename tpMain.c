@@ -416,7 +416,7 @@ void write_queue_to_file(FILE *file, typeQueue Q) {
     char line[90];
     typeCell *p = Q.h;
 
-    printf("writing queue to file : \n");
+    printf("| writing queue to file :                         |\n");
 
     if (!emptyQueue(Q)) {
         while (p != NULL) {
@@ -426,13 +426,13 @@ void write_queue_to_file(FILE *file, typeQueue Q) {
                    p->conslt.Consultation_Time,
                    p->conslt.Consultation_Reason);
 
-            printf("%s", line);
+            //printf("%s", line);
             fputs(line, file);  //print the line to file
 
             p = Next(p);
         }
     } else {
-        printf("queue is empty : nothing to write.");
+        printf("| queue is empty : nothing to write.              |\n");
     }
 }
 
@@ -507,7 +507,7 @@ void add_appointment(typeQueue *Q, typeQueue *Next_day_Q) {
     consultation temp;  /*store data temporarily */
     int reason, valid_choice = 0;
 
-    printf("---------------New Appointment----------------\n\n");
+    printf("------------------New Appointment-----------------\n\n");
 
     printf("Employee's ID : ");
     scanf("%s", temp.Employee_ID);
@@ -1212,7 +1212,7 @@ int main() {
     printf("|                                                 |\n");
     printf("+-------------------------------------------------+\n");
 
-    printf("\nPress any key to continue...\n");
+    printf("\nPress enter to continue...\n");
     getchar(); // wait for user input
     system("cls");
 
@@ -1259,18 +1259,9 @@ int main() {
         printf("| No existing appointments found for today.       |\n");
     }
 
-    // Load next day's appointments
-    nextDayFile = fopen("nextcons.txt", "r");
-    if (nextDayFile != NULL) {
-        read_file_to_queue(nextDayFile, &nextDayQueue);
-        fclose(nextDayFile);
-        printf("| Next day's appointments loaded successfully.    |\n");
-    } else {
-        printf("| No existing appointments found for next day.    |\n");
-    }
     printf("+-------------------------------------------------+\n");
 
-    printf("\nPress any key to continue...\n");
+    printf("\nPress enter to continue...\n");
     getchar(); // wait for user input
     system("cls");
 
@@ -1491,7 +1482,7 @@ int main() {
                     }
 
                     if (choice != 6) {
-                        printf("\nPress any key to continue...\n");
+                        printf("\nPress enter to continue...\n");
                         getchar(); // wait for user input
                         system("cls"); // Clear screen before returning to employee submenu
                     }
@@ -1505,22 +1496,12 @@ int main() {
                 printf("|            SAVING DATA AND EXITING              |\n");
                 printf("+-------------------------------------------------+\n");
 
-                // Save today's appointments
-                appointmentFile = fopen("cons.txt", "w");
-                if (appointmentFile != NULL) {
-                    write_queue_to_file(appointmentFile, todayQueue);
-                    fclose(appointmentFile);
-                    printf("| Today's appointments saved.                    |\n");
-                } else {
-                    printf("| Error: Could not save today's appointments.    |\n");
-                }
-
                 // Save next day's appointments
-                nextDayFile = fopen("nextcons.txt", "w");
+                nextDayFile = fopen("cons.txt", "w");
                 if (nextDayFile != NULL) {
                     write_queue_to_file(nextDayFile, nextDayQueue);
                     fclose(nextDayFile);
-                    printf("| Next day's appointments saved.                 |\n");
+                    printf("| Next day's appointments saved.                  |\n");
                 } else {
                     printf("| Error: Could not save next day's appointments. |\n");
                 }
@@ -1530,7 +1511,7 @@ int main() {
                 if (employeeFile != NULL) {
                     saveEmp(employeeRecords, employeeFile);
                     fclose(employeeFile);
-                    printf("| Employee records saved.                        |\n");
+                    printf("| Employee records saved.                         |\n");
                 } else {
                     printf("| Error: Could not save employee records.        |\n");
                 }
@@ -1546,7 +1527,7 @@ int main() {
         }
 
         if (choice != 9) {
-            printf("\nPress any key to continue...\n");
+            printf("\nPress enter to continue...\n");
             getchar(); // wait for user input
             system("cls"); // Clear screen before returning to main menu
         }
