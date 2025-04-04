@@ -507,7 +507,7 @@ void add_appointment(typeQueue *Q, typeQueue *Next_day_Q) {
     consultation temp;  /*store data temporarily */
     int reason, valid_choice = 0;
 
-    printf("------------------New Appointment-----------------\n\n");
+    printf("------------------New Appointment----------------\n\n");
 
     printf("Employee's ID : ");
     scanf("%s", temp.Employee_ID);
