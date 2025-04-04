@@ -4,8 +4,24 @@
 #include <time.h>
 #include "Health_system_function.h"
 
-
 int main() {
+    system("cls"); // Clear screen at start
+
+    // Print welcome frame
+    printf("+-------------------------------------------------+\n");
+    printf("|                                                 |\n");
+    printf("|        +++ Occupational_Health_System +++       |\n");
+    printf("|                                                 |\n");
+    printf("|      Made by maramDaas and Khadir_Hibatallah    |\n");
+    printf("|           Supervised by Miss Chader             |\n");
+    printf("|                                                 |\n");
+    printf("|             ~~ Welcome dear user ~~             |\n");
+    printf("|                                                 |\n");
+    printf("+-------------------------------------------------+\n");
+
+    printf("\nPress enter to continue...\n");
+    getchar(); // wait for user input
+    system("cls");
 
     // Files for saving/loading data
     FILE *appointmentFile, *nextDayFile, *employeeFile;
@@ -25,65 +41,63 @@ int main() {
     char *currentDate = get_date(&day, &month, &year);
     int currentTimeInt = time_int(get_time());
 
-
-    //load existing data
-    printf("Loading existing data...\n");
+    // Try to load existing data
+    printf("+-------------------------------------------------+\n");
+    printf("|              LOADING SYSTEM DATA                |\n");
+    printf("+-------------------------------------------------+\n");
 
     // Load employee records
-    employeeFile = fopen("EmpRecords.txt","r");
-
+    employeeFile = fopen("EmpRecords.txt", "r");
     if (employeeFile != NULL) {
-
         employeeRecords = loadEmp(employeeFile);
-        printf("Employee records loaded successfully.\n");
         fclose(employeeFile);
-
-    }
-    else {
-        printf("No existing employee records found. Starting with empty records.\n");
+        printf("| Employee records loaded successfully.           |\n");
+    } else {
+        printf("| No existing employee records found.             |\n");
     }
 
     // Load today's appointments
-    appointmentFile = fopen("Consultations.txt", "r");
-
+    appointmentFile = fopen("cons.txt", "r");
     if (appointmentFile != NULL) {
-
         read_file_to_queue(appointmentFile, &todayQueue);
         fclose(appointmentFile);
-        printf("Today's appointments loaded successfully.\n");
-
-    }
-    else {
-        printf("No existing appointments found for today. Starting with empty queue.\n");
-    }
-
-    // Load next day's appointments
-    nextDayFile = fopen("nextcons.txt", "r");
-    if (nextDayFile != NULL) {
-        read_file_to_queue(nextDayFile, &nextDayQueue);
-        fclose(nextDayFile);
-        printf("Next day's appointments loaded successfully.\n");
+        printf("| Today's appointments loaded successfully.       |\n");
     } else {
-        printf("No existing appointments found for next day. Starting with empty queue.\n");
+        printf("| No existing appointments found for today.       |\n");
     }
 
-    printf("\n================= CLINIC MANAGEMENT SYSTEM =================\n");
-    printf("Current date: %s\n", currentDate);
-    printf("Current time: %s\n", get_time());
-    printf("Appointments processed today: %d/%d\n", processed_count, maximum);
+    printf("+-------------------------------------------------+\n");
+
+    printf("\nPress enter to continue...\n");
+    getchar(); // wait for user input
+    system("cls");
 
     // Main menu loop
     do {
-        printf("\n==================== MAIN MENU ====================\n");
-        printf("1. Display today's appointment queue\n");
-        printf("2. Display next day's appointment queue\n");
-        printf("3. Add new appointment\n");
-        printf("4. Cancel appointment\n");
-        printf("5. Process next appointment\n");
-        printf("6. Reschedule appointment to next day\n");
-        printf("7. Check automatic periodic and return-to-work appointments\n");
-        printf("8. Employee record management\n");
-        printf("9. Save and exit\n");
+        // Display current status in frame
+        printf("+-------------------------------------------------+\n");
+        printf("|               SYSTEM INFORMATION                |\n");
+        printf("+-------------------------------------------------+\n");
+        printf("| Current date: %-32s  |\n", currentDate);
+        printf("| Current time: %-32s  |\n", get_time());
+        printf("| Appointments processed: %-24d|\n", processed_count);
+        printf("| Maximum appointments: %-25d |\n", maximum);
+        printf("+-------------------------------------------------+\n");
+
+        // Main menu
+        printf("\n+-------------------------------------------------+\n");
+        printf("|                   MAIN MENU                     |\n");
+        printf("+-------------------------------------------------+\n");
+        printf("| 1. Display today's appointment queue            |\n");
+        printf("| 2. Display next day's appointment queue         |\n");
+        printf("| 3. Add new appointment                          |\n");
+        printf("| 4. Cancel appointment                           |\n");
+        printf("| 5. Process next appointment                     |\n");
+        printf("| 6. Reschedule appointment to next day           |\n");
+        printf("| 7. Check periodic & return-to-work appointments |\n");
+        printf("| 8. Employee record management                   |\n");
+        printf("| 9. Save and exit                                |\n");
+        printf("+-------------------------------------------------+\n");
         printf("Enter your choice (1-9): ");
 
         if (scanf("%d", &choice) != 1) {
@@ -92,71 +106,99 @@ int main() {
             continue;
         }
         clear();
+        system("cls"); // Clear screen after each menu selection
 
         switch (choice) {
             case 1:
-                printf("\n===== TODAY'S APPOINTMENT QUEUE =====\n");
+                printf("+-------------------------------------------------+\n");
+                printf("|          TODAY'S APPOINTMENT QUEUE              |\n");
+                printf("+-------------------------------------------------+\n");
                 if (emptyQueue(todayQueue)) {
-                    printf("No appointments scheduled for today.\n");
+                    printf("| No appointments scheduled for today.           |\n");
+                    printf("+-------------------------------------------------+\n");
                 } else {
+                    printf("+-------------------------------------------------+\n");
                     display_queue(todayQueue);
                 }
                 break;
 
             case 2:
-                printf("\n===== NEXT DAY'S APPOINTMENT QUEUE =====\n");
+                printf("+-------------------------------------------------+\n");
+                printf("|          NEXT DAY'S APPOINTMENT QUEUE           |\n");
+                printf("+-------------------------------------------------+\n");
                 if (emptyQueue(nextDayQueue)) {
-                    printf("No appointments scheduled for next day.\n");
+                    printf("| No appointments scheduled for next day.        |\n");
+                    printf("+-------------------------------------------------+\n");
                 } else {
+                    printf("+-------------------------------------------------+\n");
                     display_queue(nextDayQueue);
                 }
                 break;
 
             case 3:
-                printf("\n===== ADD NEW APPOINTMENT =====\n");
+                printf("+-------------------------------------------------+\n");
+                printf("|               ADD NEW APPOINTMENT               |\n");
+                printf("+-------------------------------------------------+\n");
                 add_appointment(&todayQueue, &nextDayQueue);
                 break;
 
             case 4:
-                printf("\n===== CANCEL APPOINTMENT =====\n");
+                printf("+-------------------------------------------------+\n");
+                printf("|               CANCEL APPOINTMENT                |\n");
+                printf("+-------------------------------------------------+\n");
                 printf("Enter employee ID to cancel appointment: ");
                 scanf("%s", userInput);
                 clear();
 
                 cancel_appointment(&todayQueue, userInput);
-                printf("Appointment canceled (if it existed).\n");
+                printf("+-------------------------------------------------+\n");
+                printf("| Appointment canceled (if it existed).            |\n");
+                printf("+-------------------------------------------------+\n");
                 break;
 
             case 5:
-                printf("\n===== PROCESS NEXT APPOINTMENT =====\n");
+                printf("+-------------------------------------------------+\n");
+                printf("|             PROCESS NEXT APPOINTMENT             |\n");
+                printf("+-------------------------------------------------+\n");
                 if (emptyQueue(todayQueue)) {
-                    printf("No appointments to process.\n");
+                    printf("| No appointments to process.                    |\n");
+                    printf("+-------------------------------------------------+\n");
                 } else {
-                  close_appointment(&todayQueue, employeeRecords);
+                    close_appointment(&todayQueue, &employeeRecords);
                 }
                 break;
 
             case 6:
-                printf("\n===== RESCHEDULE APPOINTMENT =====\n");
+                printf("+-------------------------------------------------+\n");
+                printf("|             RESCHEDULE APPOINTMENT              |\n");
+                printf("+-------------------------------------------------+\n");
                 reschedule_manual(&todayQueue, &nextDayQueue);
                 break;
 
             case 7:
-                printf("\n===== CHECK AUTOMATIC APPOINTMENTS =====\n");
-                printf("Checking for periodic visits and return-to-work appointments...\n");
+                printf("+-------------------------------------------------+\n");
+                printf("|          CHECK AUTOMATIC APPOINTMENTS           |\n");
+                printf("+-------------------------------------------------+\n");
+                printf("| Checking for periodic visits and return-to-work  |\n");
+                printf("| appointments...                                  |\n");
                 schedule_periodic_return(employeeRecords, &nextDayQueue, currentDate, currentTimeInt);
-                printf("Check complete. View next day's queue to see any new appointments.\n");
+                printf("| Check complete. View next day's queue            |\n");
+                printf("| to see any new appointments.                     |\n");
+                printf("+-------------------------------------------------+\n");
                 break;
 
             case 8:
                 do {
-                    printf("\n===== EMPLOYEE RECORD MANAGEMENT =====\n");
-                    printf("1. View all employee records\n");
-                    printf("2. Find employee by ID\n");
-                    printf("3. Add new employee\n");
-                    printf("4. Update employee information\n");
-                    printf("5. Delete employee\n");
-                    printf("6. Return to main menu\n");
+                    printf("+-------------------------------------------------+\n");
+                    printf("|           EMPLOYEE RECORD MANAGEMENT            |\n");
+                    printf("+-------------------------------------------------+\n");
+                    printf("| 1. View all employee records                    |\n");
+                    printf("| 2. Find employee by ID                          |\n");
+                    printf("| 3. Add new employee                             |\n");
+                    printf("| 4. Update employee information                  |\n");
+                    printf("| 5. Delete employee                              |\n");
+                    printf("| 6. Return to main menu                          |\n");
+                    printf("+-------------------------------------------------+\n");
                     printf("Enter your choice (1-6): ");
 
                     if (scanf("%d", &choice) != 1) {
@@ -165,40 +207,57 @@ int main() {
                         continue;
                     }
                     clear();
+                    system("cls"); // Clear screen after submenu selection
 
                     switch (choice) {
                         case 1:
-                            printf("\n===== ALL EMPLOYEE RECORDS =====\n");
+                            printf("+-------------------------------------------------+\n");
+                            printf("|             ALL EMPLOYEE RECORDS                |\n");
+                            printf("+-------------------------------------------------+\n");
                             if (employeeRecords == NULL) {
-                                printf("No employee records found.\n");
+                                printf("| No employee records found.                      |\n");
+                                printf("+-------------------------------------------------+\n");
                             } else {
                                 printInGrp(employeeRecords);
                             }
                             break;
 
                         case 2:
-                            printf("\n===== FIND EMPLOYEE =====\n");
+                            printf("+-------------------------------------------------+\n");
+                            printf("|                 FIND EMPLOYEE                   |\n");
+                            printf("+-------------------------------------------------+\n");
                             printf("Enter employee ID: ");
                             scanf("%s", userInput);
                             clear();
 
                             emp *foundEmployee = findEmp(employeeRecords, userInput);
                             if (foundEmployee != NULL) {
-                                printf("\nEmployee found:\n");
+                                printf("+-------------------------------------------------+\n");
+                                printf("|               EMPLOYEE FOUND                    |\n");
+                                printf("+-------------------------------------------------+\n");
                                 printEmp(foundEmployee);
                             } else {
-                                printf("Employee with ID %s not found.\n", userInput);
+                                printf("+-------------------------------------------------+\n");
+                                printf("| Employee with ID %-27s |\n", userInput);
+                                printf("| not found.                                      |\n");
+                                printf("+-------------------------------------------------+\n");
                             }
                             break;
 
                         case 3:
-                            printf("\n===== ADD NEW EMPLOYEE =====\n");
+                            printf("+-------------------------------------------------+\n");
+                            printf("|               ADD NEW EMPLOYEE                  |\n");
+                            printf("+-------------------------------------------------+\n");
                             employeeRecords = addEmp(employeeRecords);
-                            printf("Employee added successfully.\n");
+                            printf("+-------------------------------------------------+\n");
+                            printf("| Employee added successfully.                    |\n");
+                            printf("+-------------------------------------------------+\n");
                             break;
 
                         case 4:
-                            printf("\n===== UPDATE EMPLOYEE INFORMATION =====\n");
+                            printf("+-------------------------------------------------+\n");
+                            printf("|         UPDATE EMPLOYEE INFORMATION             |\n");
+                            printf("+-------------------------------------------------+\n");
                             printf("Enter employee ID to update: ");
                             scanf("%s", userInput);
                             clear();
@@ -207,7 +266,9 @@ int main() {
                             break;
 
                         case 5:
-                            printf("\n===== DELETE EMPLOYEE =====\n");
+                            printf("+-------------------------------------------------+\n");
+                            printf("|               DELETE EMPLOYEE                   |\n");
+                            printf("+-------------------------------------------------+\n");
                             printf("Enter employee ID to delete: ");
                             scanf("%s", userInput);
                             clear();
@@ -216,36 +277,40 @@ int main() {
                             break;
 
                         case 6:
-                            printf("Returning to main menu...\n");
+                            printf("+-------------------------------------------------+\n");
+                            printf("| Returning to main menu...                       |\n");
+                            printf("+-------------------------------------------------+\n");
                             break;
 
                         default:
-                            printf("Invalid choice. Please try again.\n");
+                            printf("+-------------------------------------------------+\n");
+                            printf("| Invalid choice. Please try again.               |\n");
+                            printf("+-------------------------------------------------+\n");
+                    }
+
+                    if (choice != 6) {
+                        printf("\nPress enter to continue...\n");
+                        getchar(); // wait for user input
+                        system("cls"); // Clear screen before returning to employee submenu
                     }
                 } while (choice != 6);
                 choice = 0; // Reset choice to continue main menu
+                system("cls"); // Clear screen before returning to main menu
                 break;
 
             case 9:
-                printf("\n===== SAVING DATA AND EXITING =====\n");
-                // Save today's appointments
-                appointmentFile = fopen("Consultations.txt", "w");
-                if (appointmentFile != NULL) {
-                    write_queue_to_file(appointmentFile, todayQueue);
-                    fclose(appointmentFile);
-                    printf("Today's appointments saved.\n");
-                } else {
-                    printf("Error: Could not save today's appointments.\n");
-                }
+                printf("+-------------------------------------------------+\n");
+                printf("|            SAVING DATA AND EXITING              |\n");
+                printf("+-------------------------------------------------+\n");
 
                 // Save next day's appointments
-                nextDayFile = fopen("nextcons.txt", "w");
+                nextDayFile = fopen("cons.txt", "w");
                 if (nextDayFile != NULL) {
                     write_queue_to_file(nextDayFile, nextDayQueue);
                     fclose(nextDayFile);
-                    printf("Next day's appointments saved.\n");
+                    printf("| Next day's appointments saved.                  |\n");
                 } else {
-                    printf("Error: Could not save next day's appointments.\n");
+                    printf("| Error: Could not save next day's appointments. |\n");
                 }
 
                 // Save employee records
@@ -253,16 +318,25 @@ int main() {
                 if (employeeFile != NULL) {
                     saveEmp(employeeRecords, employeeFile);
                     fclose(employeeFile);
-                    printf("Employee records saved.\n");
+                    printf("| Employee records saved.                         |\n");
                 } else {
-                    printf("Error: Could not save employee records.\n");
+                    printf("| Error: Could not save employee records.        |\n");
                 }
 
-                printf("Exiting program...\n");
+                printf("| Exiting program...                              |\n");
+                printf("+-------------------------------------------------+\n");
                 break;
 
             default:
-                printf("Invalid choice. Please try again.\n");
+                printf("+-------------------------------------------------+\n");
+                printf("| Invalid choice. Please try again.               |\n");
+                printf("+-------------------------------------------------+\n");
+        }
+
+        if (choice != 9) {
+            printf("\nPress enter to continue...\n");
+            getchar(); // wait for user input
+            system("cls"); // Clear screen before returning to main menu
         }
     } while (choice != 9);
 
