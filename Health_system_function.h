@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <windows.h>
 
 
 /*---------------------------------TYPE DEFINITIONS------------------------------*/
@@ -17,18 +18,18 @@ typedef struct consultation consultation ;
  struct consultation
  {
     char Employee_ID[9];
-    char Employee_Name[50];            
+    char Employee_Name[50];
     char Consultation_Time[6];         /*in the format HH:MM*/
-    char Consultation_Reason[21] ;  
+    char Consultation_Reason[21] ;
 
-    
+
  };
 
-typedef struct cell typeCell;           /*type of an element in the list*/   
+typedef struct cell typeCell;           /*type of an element in the list*/
 
 
-struct cell {          
-    consultation conslt;                 
+struct cell {
+    consultation conslt;
     typeCell *addr;                      /*address of next*/
     int priority ;                       /*priority of the appointement*/
 };
@@ -39,11 +40,11 @@ struct typeQueue
 {
     typeCell *h ;                          /*pointer to the head of the queue*/
     typeCell *t ;                          /*pointer to the tail of the queue*/
-}; 
+};
 typedef struct typeQueue typeQueue ;       /*define queue as a type */
 
 
-struct emp {  
+struct emp {
     char id[9];
     int consult_num;
     char last_consult[11];
@@ -56,10 +57,10 @@ struct emp {
 //type of a cell in the linked list
 typedef struct emp emp ;
 
-//global variables 
-extern int processed_count ;        //to keep track of the number of appointments processed during the day  
+//global variables
+extern int processed_count ;        //to keep track of the number of appointments processed during the day
 extern int maximum ;                    //maximum number of appointments per day (to allow the user to modify it )
- 
+
 /*-------------------------------------------------------------------------------------------------------------------*/
 
 /*------------------------------------Functions Headers----------------------------------------------------------*/
@@ -90,21 +91,24 @@ consultation consultation_info(typeCell *k);
 /*returns the priority of consultation reasons from 1 to 3 . returns -1 for invalid reasons*/
 int reason_priority(char reason[21]);
 
-//clear the screen 
+//returns 1 if the ID is unique in the list and 0 else
+int unique_ID(emp* head, char *ID);
+
+//clear the screen
 void clear_screen();
 
 /*displays the queue*/
 void display_queue(typeQueue Q);
 
-/*reads data from text file given by a pointer into a queue*/           
+/*reads data from text file given by a pointer into a queue*/
 void read_file_to_queue(FILE *file,typeQueue *Q);
 
-//prints the content of Q into file 
+//prints the content of Q into file
 void write_queue_to_file(FILE *file , typeQueue Q);
 
  //clear input buffer
  void clear();
- 
+
 /*converts time from int to string */
 char* time_string(int time);
 
@@ -120,7 +124,7 @@ char* get_time();
 //free Queue
 void free_Q(typeQueue *Q);
 
-//returns in p and q the address of the cell containing the employye_id = ID and the previous cell respectivly 
+//returns in p and q the address of the cell containing the employye_id = ID and the previous cell respectivly
 void access_consultation(typeQueue Q , char* ID, typeCell** q, typeCell** p);
 
 //assignes the fields of src to dest
@@ -130,42 +134,42 @@ void Ass_consultation_type(consultation *dest , consultation src);
 int size_of_queue(typeQueue Q);
 
 //return 1 if the queue has more than max elements
-int full_queue_day(typeQueue Q);        
+int full_queue_day(typeQueue Q);
 
 //returns in p the address of the last element with priority greater or equal than prio , and its previous in q
 void access_by_priority(typeQueue Q , int prio , typeCell **p ,typeCell **q);
 
-//assigns the available visit time based on priority and returns the interval of available time 
-void assign_time(typeQueue Q , consultation c ,char **min_time , char **max_time , int current_time);
+//assigns the available visit time based on priority to c
+int assign_time(typeQueue Q, consultation *c, int current_time);
 
 
 /*---------------------------------Queue's functionalities-------------------*/
 
-/* deletes an appointment of the queue given the employee iD  */
-void cancel_appointment(typeQueue *Q , char* ID);
+/* deletes an appointment of the queue given the employee iD returns 1 if the appointment was found and 0 else*/
+int cancel_appointment(typeQueue *Q , char* ID);
 
-//add an appointment from the user's input 
+//add an appointment from the user's input
 void add_appointment(typeQueue *Q , typeQueue *Next_day_Q);
 
 
-//reschedules by moving least priority appointment to next day  
+//reschedules by moving least priority appointment to next day
 void reschedule(typeQueue *Q,typeQueue *Next_day_Q,consultation c);
 
-//automatically schedules return to work appointments and periodic examinations to the next day 
+//automatically schedules return to work appointments and periodic examinations to the next day
 void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_date ,int current_time);
 
 
-//closes the highest priority appointment appointment and update the corresponding employee record
-void close_appointment(typeQueue *Q,emp *head);
+//closes an appointment appointment and update the corresponding employee record returns 1 if successful
+int close_appointment(typeQueue *Q,emp *head);
 
 
-//reschedules an appointment given its ID from the stdin to next day 
+//reschedules an appointment given its ID from the stdin to next day
 void reschedule_manual(typeQueue *Q , typeQueue *Next_day_queue);
 
 
 /*-------------------------------Queue's abstract machine------------------*/
 
-//initialize the queue 
+//initialize the queue
 typeQueue createQueue();
 
 /*returns 1 if the list is empty and 0 otherwise*/
@@ -192,6 +196,13 @@ void changeLastConsult(char lastConsult[], char id[], struct emp *h);
 
 void changeReturnWork(char returnWork[], char id[], struct emp *h);
 
+void updateEmp(struct emp *h, char id[]);
+
+void deleteEmp(struct emp **h, char deleted_id[]);
+
+// adds a new employee to the linked list by collecting user input for all fields
+struct emp* addEmp(struct emp *h);
+
 void readLine(struct emp *p, char *line);
 
 struct emp* loadEmp(FILE *f);
@@ -202,15 +213,10 @@ void printInGrp(struct emp *h);
 
 void saveEmp(struct emp *h, FILE *f);
 
-struct emp* addEmp(struct emp *h);
-
 void addNewEmp(consultation *q, struct emp **h);
-
-void updateEmp(struct emp *h, char id[]);
-
-void deleteEmp(struct emp **h, char deleted_id[]);
 
 void subAutoUpdate(struct emp *h, char id[], char reason[], char date[]);
 
 void updateSingleEmp(struct emp **h, typeQueue *q, char id[], char date[]);
+
 #endif
