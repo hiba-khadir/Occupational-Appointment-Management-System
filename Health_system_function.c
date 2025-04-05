@@ -9,7 +9,7 @@
 //type definition is in the header file
 //initialization
 int processed_count = 0 ;
-int maximum = 5 ;
+int maximum = 10 ;
 
 
 /*-------------------------the linked lists model implementation for priority queue----------------------------*/
@@ -1231,35 +1231,35 @@ struct emp* addEmp(struct emp *h) {
 
     return h;
 }
-
 void readLine(struct emp *p, char *line) {
-    int i = 0, k = 0;
-    char buffer[256];
+    int i = 0;
+    int k = 0;
+    char num[4];  // increased to hold up to 3 digits + null terminator
 
     // ID
-    sscanf(line + i, "%8[^;]", p->id); // max 8 chars + null
+    sscanf(line + i, "%[^;]", p->id);
     i += strlen(p->id) + 1;
 
-    // consult number
-    sscanf(line + i, "%2[^;]", buffer); // safe buffer for atoi
-    p->consult_num = atoi(buffer);
-    i += strlen(buffer) + 1;
-
-    // last consult date
-    sscanf(line + i, "%10[^;]", p->last_consult);
-    i += strlen(p->last_consult) + 1;
-
-    // return to work date
-    sscanf(line + i, "%10[^;]", p->return_work);
-    i += strlen(p->return_work) + 1;
-
-    // name
-    sscanf(line + i, "%34[^;]", p->name);
+    // Name
+    sscanf(line + i, "%[^;]", p->name);
     i += strlen(p->name) + 1;
 
-    // history � split by ',' � max 5 entries
+    // Consult Number
+    sscanf(line + i, "%[^;]", num);
+    p->consult_num = atoi(num);
+    i += strlen(num) + 1;
+
+    // Last Consult
+    sscanf(line + i, "%[^;]", p->last_consult);
+    i += strlen(p->last_consult) + 1;
+
+    // Return to Work
+    sscanf(line + i, "%[^;]", p->return_work);
+    i += strlen(p->return_work) + 1;
+
+    // Medical History (comma-separated, up to 5 entries)
     while (k < 5 && line[i] != '\0' && line[i] != '\n') {
-        sscanf(line + i, "%24[^,\n]", p->history[k]);
+        sscanf(line + i, "%[^,\n]", p->history[k]);
         i += strlen(p->history[k]);
         if (line[i] == ',') {
             i++;
@@ -1267,7 +1267,7 @@ void readLine(struct emp *p, char *line) {
         k++;
     }
 
-    // fill remaining history slots with empty strings
+    // Fill any remaining history slots with empty strings
     while (k < 5) {
         p->history[k][0] = '\0';
         k++;
@@ -1282,9 +1282,7 @@ struct emp* loadEmp(FILE *f) {
     while (fgets(line, sizeof(line), f) != NULL) {
 
         p = createEmp();
-        printf("line : %s \n",line);
         readLine(p, line);
-        printf("line was read succesfully ID : %s , name %s \n",p->id,p->name);
 
         p->adr = NULL;
 

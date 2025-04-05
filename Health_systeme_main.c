@@ -50,9 +50,9 @@ int main() {
     // Load employee records
     employeeFile = fopen("EmpRecords.txt", "r");
     if (employeeFile != NULL) {
-        printf("EmpRecord opened for writing \n");
+
         employeeRecords = loadEmp(employeeFile);
-        printf("line loaded");
+
         fclose(employeeFile);
         printf("| Employee records loaded successfully.           |\n");
     } else {
@@ -228,6 +228,8 @@ int main() {
                                 printf("+-------------------------------------------------+\n");
                             } else {
                                 printInGrp(employeeRecords);
+                                clear();
+                                getchar();
                             }
                             break;
 
