@@ -1234,7 +1234,7 @@ struct emp* addEmp(struct emp *h) {
 void readLine(struct emp *p, char *line) {
     int i = 0;
     int k = 0;
-    char num[4];  // increased to hold up to 3 digits + null terminator
+    char num[4];
 
     // ID
     sscanf(line + i, "%[^;]", p->id);
@@ -1264,13 +1264,13 @@ void readLine(struct emp *p, char *line) {
         if (line[i] == ',') {
             i++;
         }
-        k++;
+        k = k +1 ;
     }
 
-    // Fill any remaining history slots with empty strings
+    // fill history with empty strings
     while (k < 5) {
         p->history[k][0] = '\0';
-        k++;
+        k = k +1 ;
     }
 }
 
