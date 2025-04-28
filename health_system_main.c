@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "Health_system_function.h"
+#include "health_system_functions.h"
 
 
 int main() {
@@ -14,7 +14,6 @@ int main() {
     printf("|        +++ Occupational_Health_System +++       |\n");
     printf("|                                                 |\n");
     printf("|      Made by maramDaas and Khadir_Hibatallah    |\n");
-    printf("|           Supervised by Miss Chader             |\n");
     printf("|                                                 |\n");
     printf("|             ~~ Welcome dear user ~~             |\n");
     printf("|                                                 |\n");
@@ -105,10 +104,10 @@ int main() {
 
         if (scanf("%d", &choice) != 1) {
             printf("Invalid input. Please enter a number.\n");
-            clear();
+            flush_input();
             continue;
         }
-        clear();
+        flush_input();
         clear_screen(); // Clear screen after each menu selection
 
         switch (choice) {
@@ -151,7 +150,7 @@ int main() {
                 printf("+-------------------------------------------------+\n");
                 printf("Enter employee ID to cancel appointment: ");
                 scanf("%s", userInput);
-                clear();
+                flush_input();
                 int cancel ;
 
                 cancel = cancel_appointment(&todayQueue, userInput);
@@ -212,10 +211,10 @@ int main() {
 
                     if (scanf("%d", &choice) != 1) {
                         printf("Invalid input. Please enter a number.\n");
-                        clear();
+                        flush_input();
                         continue;
                     }
-                    clear();
+                    flush_input();
                     clear_screen(); // Clear screen after submenu selection
 
                     switch (choice) {
@@ -228,7 +227,7 @@ int main() {
                                 printf("+-------------------------------------------------+\n");
                             } else {
                                 printInGrp(employeeRecords);
-                                clear();
+                                flush_input();
                                 getchar();
                             }
                             break;
@@ -239,7 +238,7 @@ int main() {
                             printf("+-------------------------------------------------+\n");
                             printf("Enter employee ID: ");
                             scanf("%s", userInput);
-                            clear();
+                            flush_input();
 
                             emp *foundEmployee = findEmp(employeeRecords, userInput);
                             if (foundEmployee != NULL) {
@@ -271,7 +270,7 @@ int main() {
                             printf("+-------------------------------------------------+\n");
                             printf("Enter employee ID to update: ");
                             scanf("%s", userInput);
-                            clear();
+                            flush_input();
 
                             updateEmp(employeeRecords, userInput);
                             break;
@@ -282,7 +281,7 @@ int main() {
                             printf("+-------------------------------------------------+\n");
                             printf("Enter employee ID to delete: ");
                             scanf("%s", userInput);
-                            clear();
+                            flush_input();
 
                             deleteEmp(&employeeRecords, userInput);
                             break;

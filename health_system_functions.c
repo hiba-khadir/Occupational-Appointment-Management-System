@@ -3,13 +3,13 @@
 #include <string.h>
 #include <time.h>
 #include <windows.h>
-#include "Health_system_function.h"
+#include "health_system_functions.h"
 
 
 //type definition is in the header file
 //initialization
 int processed_count = 0 ;
-int maximum = 10 ;
+int maximum = 5 ;
 
 
 /*-------------------------the linked lists model implementation for priority queue----------------------------*/
@@ -222,6 +222,11 @@ void write_queue_to_file(FILE *file , typeQueue Q){
 void clear()
 {
     while ( getchar() != '\n' );
+}
+// clear input from the file from newlines 
+void flush_input() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
 }
 
 /*converts time from int to string */
@@ -671,13 +676,19 @@ void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_d
     //initialization
     min_time = malloc(6*sizeof(char));
     max_time = malloc(6*sizeof(char));
+    printf("current date : %s \n",current_date);
 
     //traverse the list to find periodics and return to work
     while (p!=NULL)
     {
+        strcpy(date_buffer,p->last_consult);
+        sscanf(date_buffer,"%d/%d/%d",&d,&m,&y);    //parse the date string and get int values
+        sscanf(current_date,"%d/%d/%d",&current_d,&current_m,&current_y);
 
-        if (strcmp(p->return_work,current_date) == 0) //compare the return to work date with the current date
+
+        if (d == current_d + 1 && m == current_m && y == current_y) //compare the return to work date with the current date
         {
+            printf("cheking employee : %s , return to work date : %s , last day consult %s \n",p->name,p->return_work,p->last_consult);
             //initialize the appointment info
             strcpy(temp.Consultation_Reason,"Return-to-Work");
             strcpy(temp.Employee_ID,p->id);
@@ -691,11 +702,11 @@ void schedule_periodic_return(emp *head , typeQueue *Next_day_Q ,char* current_d
 
         strcpy(date_buffer,p->last_consult);
         sscanf(date_buffer,"%d/%d/%d",&d,&m,&y); //parse the date string and get int values
-        sscanf(current_date,"%d/%d/%d",&current_d,&current_m,&current_y);
 
 
 
-        if (d == current_d && m == current_m && y == current_y - 1)
+
+        if (d == current_d+1 && m == current_m && y == current_y - 1)
         {
             strcpy(temp.Consultation_Reason,"Periodic");
             strcpy(temp.Employee_ID,p->id);
@@ -734,12 +745,13 @@ int close_appointment(typeQueue *Q,emp *head){
         case 1:
             dequeue(Q,&temp);  //remove highest priority appointment
             closed = 1 ;
+            processed_count++;
             break;
 
         default:
             printf("Enter employee ID : \n");
             scanf("%8s",ID);
-            access_consultation(*Q,ID,&a,&b);       //find the consultation to close
+            access_consultation(*Q,ID,&b,&a);       //find the consultation to close
 
             if (!b)     //b is nil the appointment was not found
             {
@@ -750,8 +762,8 @@ int close_appointment(typeQueue *Q,emp *head){
                 Ass_consultation_type(&temp,a->conslt); //store it in temp
                 delete_cell(Q,a,b);                     //delete the appointment
                 closed = 1 ;
+                processed_count++;
             }
-
             break;
         }
         if(closed)
@@ -761,8 +773,9 @@ int close_appointment(typeQueue *Q,emp *head){
             if (strcmp(temp.Consultation_Reason,"Pre-employement") == 0 ) //if it is a pre-employment visit
             {
                 printf("    Do you want to add this employee's record to the system ? ( enter \"Y\" for yes )\n ");
-                clear(); //clear input buffer
-                scanf("%c",&choice);
+                flush_input();
+                scanf(" %c", &choice);
+                
 
                 if (choice == 'y' || choice == 'Y')
                 {
@@ -972,18 +985,22 @@ struct emp* createEmp() {
 
 // searches for an employee by id in the linked list and returns pointer to it or null if not found
 struct emp* findEmp(struct emp *h, char id[]) {
+
     struct emp *p = h;
     while (p != NULL) {
         if (strcmp(p->id, id) == 0) {
-            return p;
+            break;
         }
-        p = p->adr;
+        else{
+            p = p->adr;
+        }
     }
-    return NULL;
+    return p;
 }
 
 // adds a new reason to an employee's medical history, maintaining only the 5 most recent entries
 void updateHistory(struct emp *h, char id[], char reason[]) {
+    
     struct emp *p = findEmp(h, id);
     if (p == NULL) {
         printf("Employee doesn't exist\n");

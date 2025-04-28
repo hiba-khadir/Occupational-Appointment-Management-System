@@ -1,5 +1,5 @@
-#ifndef QUEUE_OPS_H
-#define QUEUE_OPS_H
+#ifndef HEALTH_SYSTEM_FUNCTIONS_H
+#define HEALTH_SYSTEM_FUNCTIONS_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -97,6 +97,8 @@ int unique_ID(emp* head, char *ID);
 //clear the screen
 void clear_screen();
 
+// clear input from the file from newlines 
+void flush_input();
 /*displays the queue*/
 void display_queue(typeQueue Q);
 
