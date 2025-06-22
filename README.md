@@ -9,8 +9,11 @@ A C-based console application for managing employee medical consultations within
 
 appointment-management-system/
 ┣  main.c # Program entry point and user interface
+
 ┣  functions.c # functions source code
+
 ┣  functions.h # header file
+
 ┗  README.md # Project documentation
 
 
